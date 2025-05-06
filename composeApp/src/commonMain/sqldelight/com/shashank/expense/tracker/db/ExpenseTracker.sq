@@ -1,31 +1,41 @@
 CREATE TABLE Expense (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    amount REAL NOT NULL,
+    amount REAL NOT NULL CHECK (amount >= 0),
     description TEXT NOT NULL,
     categoryId INTEGER NOT NULL,
     date INTEGER NOT NULL,
-    type TEXT NOT NULL,
-    paymentMethod TEXT,
+    type TEXT NOT NULL CHECK (type IN ('INCOME', 'EXPENSE')),
+    paymentMethod TEXT CHECK (paymentMethod IN ('CASH', 'CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER', 'UPI', 'OTHER')),
     location TEXT,
     receiptImageUrl TEXT,
-    FOREIGN KEY (categoryId) REFERENCES Category(id)
+    FOREIGN KEY (categoryId) REFERENCES Category(id) ON DELETE CASCADE,
+    CHECK (length(description) > 0)
 );
+
+CREATE INDEX expense_category_idx ON Expense(categoryId);
+CREATE INDEX expense_date_idx ON Expense(date);
+CREATE INDEX expense_type_idx ON Expense(type);
 
 CREATE TABLE Category (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     icon TEXT NOT NULL,
-    color TEXT NOT NULL
+    color TEXT NOT NULL,
+    CHECK (length(name) > 0)
 );
 
 CREATE TABLE Budget (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     categoryId INTEGER NOT NULL,
-    amount REAL NOT NULL,
+    amount REAL NOT NULL CHECK (amount > 0),
     startDate INTEGER NOT NULL,
     endDate INTEGER NOT NULL,
-    FOREIGN KEY (categoryId) REFERENCES Category(id)
+    FOREIGN KEY (categoryId) REFERENCES Category(id) ON DELETE CASCADE,
+    CHECK (endDate > startDate)
 );
+
+CREATE INDEX budget_category_idx ON Budget(categoryId);
+CREATE INDEX budget_date_idx ON Budget(startDate, endDate);
 
 -- Expense queries
 expenseSelectAll:
@@ -132,4 +142,5 @@ SELECT
 FROM Expense e
 JOIN Category c ON e.categoryId = c.id
 WHERE strftime('%Y-%m', datetime(e.date / 1000, 'unixepoch')) = ?
-GROUP BY e.categoryId; 
+GROUP BY e.categoryId
+ORDER BY category_amount DESC; 
