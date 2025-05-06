@@ -1,72 +1,135 @@
-CREATE TABLE Category (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    icon TEXT NOT NULL,
-    color INTEGER NOT NULL
-);
-
 CREATE TABLE Expense (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     amount REAL NOT NULL,
     description TEXT NOT NULL,
     categoryId INTEGER NOT NULL,
-    date TEXT NOT NULL,
+    date INTEGER NOT NULL,
     type TEXT NOT NULL,
+    paymentMethod TEXT,
+    location TEXT,
+    receiptImageUrl TEXT,
     FOREIGN KEY (categoryId) REFERENCES Category(id)
+);
+
+CREATE TABLE Category (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    color TEXT NOT NULL
 );
 
 CREATE TABLE Budget (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     categoryId INTEGER NOT NULL,
     amount REAL NOT NULL,
-    period TEXT NOT NULL,
-    startDate TEXT NOT NULL,
+    startDate INTEGER NOT NULL,
+    endDate INTEGER NOT NULL,
     FOREIGN KEY (categoryId) REFERENCES Category(id)
 );
 
--- Queries
-getAllCategories:
+-- Expense queries
+expenseSelectAll:
+SELECT *
+FROM Expense
+ORDER BY date DESC;
+
+expenseSelectByCategory:
+SELECT *
+FROM Expense
+WHERE categoryId = ?
+ORDER BY date DESC;
+
+expenseSelectByDateRange:
+SELECT *
+FROM Expense
+WHERE date BETWEEN ? AND ?
+ORDER BY date DESC;
+
+expenseSelectById:
+SELECT *
+FROM Expense
+WHERE id = ?;
+
+expenseInsert:
+INSERT INTO Expense (amount, description, categoryId, date, type, paymentMethod, location, receiptImageUrl)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+expenseUpdate:
+UPDATE Expense
+SET amount = ?, description = ?, categoryId = ?, date = ?, type = ?, paymentMethod = ?, location = ?, receiptImageUrl = ?
+WHERE id = ?;
+
+expenseDelete:
+DELETE FROM Expense
+WHERE id = ?;
+
+-- Category queries
+categorySelectAll:
 SELECT *
 FROM Category
-ORDER BY name ASC;
+ORDER BY name;
 
-getCategoryById:
+categorySelectById:
 SELECT *
 FROM Category
 WHERE id = ?;
 
-getExpensesByDateRange:
-SELECT e.*, c.*
-FROM Expense e
-JOIN Category c ON e.categoryId = c.id
-WHERE e.date BETWEEN ? AND ?
-ORDER BY e.date DESC;
+categoryInsert:
+INSERT INTO Category (name, icon, color)
+VALUES (?, ?, ?);
 
-getExpensesByCategory:
-SELECT e.*, c.*
-FROM Expense e
-JOIN Category c ON e.categoryId = c.id
-WHERE e.categoryId = ?
-ORDER BY e.date DESC;
+categoryUpdate:
+UPDATE Category
+SET name = ?, icon = ?, color = ?
+WHERE id = ?;
 
-getBudgetByCategory:
-SELECT b.*, c.*
-FROM Budget b
-JOIN Category c ON b.categoryId = c.id
-WHERE b.categoryId = ?;
+categoryDelete:
+DELETE FROM Category
+WHERE id = ?;
 
+-- Budget queries
+budgetSelectAll:
+SELECT *
+FROM Budget
+ORDER BY startDate DESC;
+
+budgetSelectById:
+SELECT *
+FROM Budget
+WHERE id = ?;
+
+budgetSelectByCategory:
+SELECT *
+FROM Budget
+WHERE categoryId = ?
+ORDER BY startDate DESC;
+
+budgetInsert:
+INSERT INTO Budget (categoryId, amount, startDate, endDate)
+VALUES (?, ?, ?, ?);
+
+budgetUpdate:
+UPDATE Budget
+SET categoryId = ?, amount = ?, startDate = ?, endDate = ?
+WHERE id = ?;
+
+budgetDelete:
+DELETE FROM Budget
+WHERE id = ?;
+
+-- Report queries
 getMonthlyReport:
 SELECT 
-    strftime('%m', e.date) month_num,
-    strftime('%Y', e.date) year_num,
-    SUM(CASE WHEN e.type = 'INCOME' THEN e.amount ELSE 0 END) income_total,
-    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) expense_total,
+    strftime('%m', datetime(e.date / 1000, 'unixepoch')) AS month,
+    strftime('%Y', datetime(e.date / 1000, 'unixepoch')) AS year,
+    SUM(CASE WHEN e.type = 'INCOME' THEN e.amount ELSE 0 END) AS income_total,
+    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) AS expense_total,
     e.categoryId,
-    c.name category_name,
-    c.icon category_icon,
-    c.color category_color,
-    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) category_amount
+    c.name AS category_name,
+    c.icon AS category_icon,
+    c.color AS category_color,
+    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) AS category_amount
 FROM Expense e
 JOIN Category c ON e.categoryId = c.id
-WHERE strftime('%Y-%m', e.date) = ?
+WHERE strftime('%Y-%m', datetime(e.date / 1000, 'unixepoch')) = ?
 GROUP BY e.categoryId; 

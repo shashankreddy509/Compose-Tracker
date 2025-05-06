@@ -38,7 +38,7 @@ kotlin {
             
             // SQLDelight
             implementation("app.cash.sqldelight:android-driver:2.0.1")
-            implementation("app.cash.sqldelight:sqlcipher:2.0.1")
+            implementation("net.zetetic:android-database-sqlcipher:4.5.4")
             
             // Firebase
             implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
@@ -71,6 +71,8 @@ kotlin {
             // Koin
             implementation("io.insert-koin:koin-core:3.5.3")
             implementation("io.insert-koin:koin-compose:1.1.0")
+            implementation("io.insert-koin:koin-androidx-compose:3.5.3")
+            implementation("io.insert-koin:koin-androidx-compose-navigation:3.5.3")
             
             // Ktor
             implementation("io.ktor:ktor-client-core:2.3.8")
@@ -142,6 +144,9 @@ sqldelight {
     databases {
         create("ExpenseTrackerDatabase") {
             packageName.set("com.shashank.expense.tracker.db")
+            dialect("app.cash.sqldelight:sqlite-3-18-dialect:2.0.1")
+            verifyMigrations.set(true)
+            deriveSchemaFromMigrations.set(true)
         }
     }
 }
