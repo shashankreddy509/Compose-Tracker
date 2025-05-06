@@ -1,0 +1,72 @@
+CREATE TABLE Category (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    color INTEGER NOT NULL
+);
+
+CREATE TABLE Expense (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    amount REAL NOT NULL,
+    description TEXT NOT NULL,
+    categoryId INTEGER NOT NULL,
+    date TEXT NOT NULL,
+    type TEXT NOT NULL,
+    FOREIGN KEY (categoryId) REFERENCES Category(id)
+);
+
+CREATE TABLE Budget (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    categoryId INTEGER NOT NULL,
+    amount REAL NOT NULL,
+    period TEXT NOT NULL,
+    startDate TEXT NOT NULL,
+    FOREIGN KEY (categoryId) REFERENCES Category(id)
+);
+
+-- Queries
+getAllCategories:
+SELECT *
+FROM Category
+ORDER BY name ASC;
+
+getCategoryById:
+SELECT *
+FROM Category
+WHERE id = ?;
+
+getExpensesByDateRange:
+SELECT e.*, c.*
+FROM Expense e
+JOIN Category c ON e.categoryId = c.id
+WHERE e.date BETWEEN ? AND ?
+ORDER BY e.date DESC;
+
+getExpensesByCategory:
+SELECT e.*, c.*
+FROM Expense e
+JOIN Category c ON e.categoryId = c.id
+WHERE e.categoryId = ?
+ORDER BY e.date DESC;
+
+getBudgetByCategory:
+SELECT b.*, c.*
+FROM Budget b
+JOIN Category c ON b.categoryId = c.id
+WHERE b.categoryId = ?;
+
+getMonthlyReport:
+SELECT 
+    strftime('%m', e.date) as month,
+    strftime('%Y', e.date) as year,
+    SUM(CASE WHEN e.type = 'INCOME' THEN e.amount ELSE 0 END) as totalIncome,
+    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) as totalExpenses,
+    e.categoryId,
+    c.name as categoryName,
+    c.icon as categoryIcon,
+    c.color as categoryColor,
+    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) as categoryAmount
+FROM Expense e
+JOIN Category c ON e.categoryId = c.id
+WHERE strftime('%Y-%m', e.date) = ?
+GROUP BY e.categoryId; 
