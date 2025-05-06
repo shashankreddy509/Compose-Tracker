@@ -57,15 +57,15 @@ WHERE b.categoryId = ?;
 
 getMonthlyReport:
 SELECT 
-    strftime('%m', e.date) as month,
-    strftime('%Y', e.date) as year,
-    SUM(CASE WHEN e.type = 'INCOME' THEN e.amount ELSE 0 END) as totalIncome,
-    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) as totalExpenses,
+    strftime('%m', e.date) month_num,
+    strftime('%Y', e.date) year_num,
+    SUM(CASE WHEN e.type = 'INCOME' THEN e.amount ELSE 0 END) income_total,
+    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) expense_total,
     e.categoryId,
-    c.name as categoryName,
-    c.icon as categoryIcon,
-    c.color as categoryColor,
-    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) as categoryAmount
+    c.name category_name,
+    c.icon category_icon,
+    c.color category_color,
+    SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) category_amount
 FROM Expense e
 JOIN Category c ON e.categoryId = c.id
 WHERE strftime('%Y-%m', e.date) = ?
