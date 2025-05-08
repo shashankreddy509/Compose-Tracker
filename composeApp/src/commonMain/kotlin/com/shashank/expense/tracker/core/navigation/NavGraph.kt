@@ -2,13 +2,12 @@ package com.shashank.expense.tracker.core.navigation
 
 import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.core.registry.ScreenRegistry
-import cafe.adriel.voyager.core.registry.rememberScreen
 import cafe.adriel.voyager.navigator.Navigator
-import com.shashank.expense.tracker.presentation.splash.SplashScreen
-import com.shashank.expense.tracker.presentation.onboarding.OnboardingScreen
-import com.shashank.expense.tracker.presentation.auth.LoginScreen
-import com.shashank.expense.tracker.presentation.auth.RegisterScreen
-import com.shashank.expense.tracker.presentation.dashboard.DashboardScreen
+import com.shashank.expense.tracker.presentation.screens.auth.LoginScreen
+import com.shashank.expense.tracker.presentation.screens.auth.RegisterScreen
+import com.shashank.expense.tracker.presentation.screens.dashboard.DashboardScreen
+import com.shashank.expense.tracker.presentation.screens.onboarding.OnboardingScreen
+import com.shashank.expense.tracker.presentation.screens.splash.SplashScreen
 
 fun initializeNavigation() {
     ScreenRegistry {

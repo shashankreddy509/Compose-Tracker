@@ -1,4 +1,4 @@
-package com.shashank.expense.tracker.presentation.auth
+package com.shashank.expense.tracker.presentation.screens.auth
 
 import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.core.screen.Screen
