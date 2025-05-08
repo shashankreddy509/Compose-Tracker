@@ -4,7 +4,7 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.shashank.expense.tracker.db.ExpenseTrackerDatabase
 import com.shashank.expense.tracker.domain.model.Category
-import com.shashank.expense.tracker.domain.model.ExpenseType
+import com.shashank.expense.tracker.domain.model.TransactionType
 import com.shashank.expense.tracker.domain.repository.CategoryRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
@@ -18,7 +18,7 @@ class CategoryRepositoryImpl(
 ) : CategoryRepository {
 
     override fun getAllCategories(): Flow<List<Category>> {
-        return database.expenseTrackerQueries.categorySelectAll()
+        return database.expenseTrackerQueries.selectAllCategories()
             .asFlow()
             .mapToList(dispatcher)
             .map { categories ->
@@ -27,7 +27,7 @@ class CategoryRepositoryImpl(
     }
 
     override fun getCategoryById(id: Long): Flow<Category?> {
-        return database.expenseTrackerQueries.categorySelectById(id)
+        return database.expenseTrackerQueries.selectCategoryById(id.toString())
             .asFlow()
             .mapToList(dispatcher)
             .map { categories ->
@@ -36,7 +36,8 @@ class CategoryRepositoryImpl(
     }
 
     override suspend fun addCategory(category: Category) = withContext(dispatcher) {
-        database.expenseTrackerQueries.categoryInsert(
+        database.expenseTrackerQueries.insertCategory(
+            id = category.id.toString(),
             name = category.name,
             icon = category.icon,
             color = category.color.toString()
@@ -44,25 +45,25 @@ class CategoryRepositoryImpl(
     }
 
     override suspend fun updateCategory(category: Category) = withContext(dispatcher) {
-        database.expenseTrackerQueries.categoryUpdate(
+        database.expenseTrackerQueries.updateCategory(
             name = category.name,
             icon = category.icon,
             color = category.color.toString(),
-            id = category.id
+            id = category.id.toString()
         )
     }
 
     override suspend fun deleteCategory(id: Long) = withContext(dispatcher) {
-        database.expenseTrackerQueries.categoryDelete(id)
+        database.expenseTrackerQueries.deleteCategory(id.toString())
     }
 
     private fun com.shashank.expense.tracker.db.Category.toCategory(): Category {
         return Category(
-            id = id,
+            id = id.toLong(),
             name = name,
             icon = icon,
             color = color.toLongOrNull() ?: 0L,
-            type = ExpenseType.EXPENSE // Default type since it's not in the database
+            type = TransactionType.EXPENSE // Default type since it's not stored in the database
         )
     }
 } 

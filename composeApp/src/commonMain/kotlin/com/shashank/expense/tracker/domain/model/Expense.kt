@@ -7,23 +7,10 @@ data class Expense(
     val amount: Double,
     val description: String,
     val categoryId: Long,
+    val accountId: Long,
     val date: LocalDateTime,
-    val type: ExpenseType,
+    val type: TransactionType,
     val paymentMethod: PaymentMethod,
     val location: String? = null,
     val receiptImageUrl: String? = null
-)
-
-enum class ExpenseType {
-    INCOME,
-    EXPENSE
-}
-
-enum class PaymentMethod {
-    CASH,
-    CREDIT_CARD,
-    DEBIT_CARD,
-    BANK_TRANSFER,
-    UPI,
-    OTHER
-} 
+) 

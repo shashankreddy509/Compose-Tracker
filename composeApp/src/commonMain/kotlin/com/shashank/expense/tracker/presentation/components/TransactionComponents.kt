@@ -13,63 +13,58 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
-import com.shashank.expense.tracker.domain.model.Expense
-import com.shashank.expense.tracker.domain.model.ExpenseType
+import com.shashank.expense.tracker.domain.model.Transaction
+import com.shashank.expense.tracker.domain.model.TransactionType
 import com.shashank.expense.tracker.domain.model.PaymentMethod
 import kotlinx.datetime.*
 import kotlinx.datetime.toJavaLocalDateTime
 import java.time.format.DateTimeFormatter
+import com.shashank.expense.tracker.util.DateTimeUtil
+import com.shashank.expense.tracker.util.StringFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TransactionCard(
-    expense: Expense,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    transaction: Transaction,
+    onTransactionClick: (Transaction) -> Unit
 ) {
     Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        onClick = { onTransactionClick(transaction) }
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier.weight(1f)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = expense.description,
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    text = transaction.description,
+                    style = MaterialTheme.typography.titleMedium
                 )
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = expense.paymentMethod?.name ?: "",
-                    style = MaterialTheme.typography.bodyMedium
+                    text = StringFormatter.format("%.2f", transaction.amount),
+                    style = MaterialTheme.typography.titleMedium
                 )
             }
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    text = formatAmount(expense.amount, expense.type),
-                    style = MaterialTheme.typography.titleMedium,
-                    color = when (expense.type) {
-                        ExpenseType.INCOME -> MaterialTheme.colorScheme.primary
-                        ExpenseType.EXPENSE -> MaterialTheme.colorScheme.error
-                    }
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = formatDate(expense.date),
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
+            Text(
+                text = "Category: ${transaction.category}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "Account: ${transaction.account}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "Date: ${DateTimeUtil.formatDateTime(transaction.date)}",
+                style = MaterialTheme.typography.bodySmall
+            )
         }
     }
 }
@@ -100,8 +95,8 @@ fun CurrencyTextField(
 
 @Composable
 fun DateTimePicker(
-    dateTime: kotlinx.datetime.LocalDateTime,
-    onDateTimeSelected: (kotlinx.datetime.LocalDateTime) -> Unit,
+    dateTime: LocalDateTime,
+    onDateTimeSelected: (LocalDateTime) -> Unit,
     modifier: Modifier = Modifier
 ) {
     // Platform-specific implementation will be needed
@@ -128,15 +123,32 @@ fun ReceiptImageViewer(
     }
 }
 
-private fun formatAmount(amount: Double, type: ExpenseType): String {
+private fun formatAmount(amount: Double, type: TransactionType): String {
     val prefix = when (type) {
-        ExpenseType.INCOME -> "+"
-        ExpenseType.EXPENSE -> "-"
+        TransactionType.INCOME -> "+"
+        TransactionType.EXPENSE -> "-"
     }
     return "$prefix$${String.format("%.2f", amount)}"
 }
 
-private fun formatDate(dateTime: kotlinx.datetime.LocalDateTime): String {
+private fun formatDate(dateTime: LocalDateTime): String {
     val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
     return dateTime.toJavaLocalDateTime().format(formatter)
+}
+
+@Composable
+fun TransactionList(
+    transactions: List<Transaction>,
+    onTransactionClick: (Transaction) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        transactions.forEach { transaction ->
+            TransactionCard(
+                transaction = transaction,
+                onTransactionClick = onTransactionClick
+            )
+        }
+    }
 } 

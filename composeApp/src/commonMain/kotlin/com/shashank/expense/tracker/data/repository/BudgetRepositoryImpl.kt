@@ -11,7 +11,10 @@ import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
-import kotlinx.datetime.Instant
+import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class BudgetRepositoryImpl(
     private val database: ExpenseTrackerDatabase,
@@ -19,16 +22,7 @@ class BudgetRepositoryImpl(
 ) : BudgetRepository {
     
     override fun getAllBudgets(): Flow<List<Budget>> {
-        return database.expenseTrackerQueries.budgetSelectAll()
-            .asFlow()
-            .mapToList(dispatcher)
-            .map { budgets ->
-                budgets.map { it.toBudget() }
-            }
-    }
-
-    override fun getBudgetsByCategory(categoryId: Long): Flow<List<Budget>> {
-        return database.expenseTrackerQueries.budgetSelectByCategory(categoryId)
+        return database.expenseTrackerQueries.selectAllBudgets()
             .asFlow()
             .mapToList(dispatcher)
             .map { budgets ->
@@ -37,7 +31,7 @@ class BudgetRepositoryImpl(
     }
 
     override fun getBudgetById(id: Long): Flow<Budget?> {
-        return database.expenseTrackerQueries.budgetSelectById(id)
+        return database.expenseTrackerQueries.selectBudgetById(id.toString())
             .asFlow()
             .mapToList(dispatcher)
             .map { budgets ->
@@ -45,13 +39,24 @@ class BudgetRepositoryImpl(
             }
     }
 
+    override fun getBudgetsByCategory(categoryId: Long): Flow<List<Budget>> {
+        return database.expenseTrackerQueries.selectBudgetsByCategory(categoryId.toString())
+            .asFlow()
+            .mapToList(dispatcher)
+            .map { budgets ->
+                budgets.map { it.toBudget() }
+            }
+    }
+
     override suspend fun getBudgetStatus(budgetId: Long): BudgetStatus = withContext(dispatcher) {
-        val budget = database.expenseTrackerQueries.budgetSelectById(budgetId).executeAsOneOrNull()
+        val budget = database.expenseTrackerQueries.selectBudgetById(budgetId.toString())
+            .executeAsList()
+            .firstOrNull()
         if (budget == null) return@withContext BudgetStatus.NOT_FOUND
 
-        val now = Instant.fromEpochMilliseconds(System.currentTimeMillis())
-        val startDate = Instant.fromEpochMilliseconds(budget.startDate)
-        val endDate = Instant.fromEpochMilliseconds(budget.endDate)
+        val now = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
+        val startDate = budget.startDate.toLocalDateTime()
+        val endDate = budget.endDate.toLocalDateTime()
 
         when {
             now < startDate -> BudgetStatus.NOT_STARTED
@@ -61,35 +66,50 @@ class BudgetRepositoryImpl(
     }
 
     override suspend fun addBudget(budget: Budget) = withContext(dispatcher) {
-        database.expenseTrackerQueries.budgetInsert(
-            categoryId = budget.categoryId,
+        database.expenseTrackerQueries.insertBudget(
+            id = budget.id,
             amount = budget.amount,
-            startDate = budget.startDate,
-            endDate = budget.endDate
+            spent = budget.spent,
+            remaining = budget.remaining,
+            category = budget.category,
+            startDate = budget.startDate.toEpochMilliseconds(),
+            endDate = budget.endDate.toEpochMilliseconds()
         )
     }
 
     override suspend fun updateBudget(budget: Budget) = withContext(dispatcher) {
-        database.expenseTrackerQueries.budgetUpdate(
-            categoryId = budget.categoryId,
+        database.expenseTrackerQueries.updateBudget(
+            id = budget.id,
             amount = budget.amount,
-            startDate = budget.startDate,
-            endDate = budget.endDate,
-            id = budget.id
+            spent = budget.spent,
+            remaining = budget.remaining,
+            category = budget.category,
+            startDate = budget.startDate.toEpochMilliseconds(),
+            endDate = budget.endDate.toEpochMilliseconds()
         )
     }
 
     override suspend fun deleteBudget(id: Long) = withContext(dispatcher) {
-        database.expenseTrackerQueries.budgetDelete(id)
+        database.expenseTrackerQueries.deleteBudget(id.toString())
     }
 
     private fun com.shashank.expense.tracker.db.Budget.toBudget(): Budget {
         return Budget(
             id = id,
-            categoryId = categoryId,
             amount = amount,
-            startDate = startDate,
-            endDate = endDate
+            spent = spent,
+            remaining = remaining,
+            category = category,
+            startDate = startDate.toLocalDateTime(),
+            endDate = endDate.toLocalDateTime()
         )
+    }
+
+    private fun LocalDateTime.toEpochMilliseconds(): Long {
+        return Clock.System.now().toEpochMilliseconds()
+    }
+
+    private fun Long.toLocalDateTime(): LocalDateTime {
+        return Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault())
     }
 } 

@@ -5,7 +5,7 @@ import app.cash.sqldelight.coroutines.mapToList
 import com.shashank.expense.tracker.db.ExpenseTrackerDatabase
 import com.shashank.expense.tracker.domain.model.CategoryReport
 import com.shashank.expense.tracker.domain.model.Expense
-import com.shashank.expense.tracker.domain.model.ExpenseType
+import com.shashank.expense.tracker.domain.model.TransactionType
 import com.shashank.expense.tracker.domain.model.MonthlyReport
 import com.shashank.expense.tracker.domain.model.PaymentMethod
 import com.shashank.expense.tracker.domain.repository.ExpenseRepository
@@ -25,7 +25,7 @@ class ExpenseRepositoryImpl(
 ) : ExpenseRepository {
 
     override fun getAllExpenses(): Flow<List<Expense>> {
-        return database.expenseTrackerQueries.expenseSelectAll()
+        return database.expenseTrackerQueries.selectAllExpenses()
             .asFlow()
             .mapToList(dispatcher)
             .map { expenses ->
@@ -34,7 +34,7 @@ class ExpenseRepositoryImpl(
     }
 
     override fun getExpensesByCategory(categoryId: Long): Flow<List<Expense>> {
-        return database.expenseTrackerQueries.expenseSelectByCategory(categoryId)
+        return database.expenseTrackerQueries.selectExpensesByCategory(categoryId.toString())
             .asFlow()
             .mapToList(dispatcher)
             .map { expenses ->
@@ -43,7 +43,7 @@ class ExpenseRepositoryImpl(
     }
 
     override fun getExpensesByDateRange(startDate: Long, endDate: Long): Flow<List<Expense>> {
-        return database.expenseTrackerQueries.expenseSelectByDateRange(startDate, endDate)
+        return database.expenseTrackerQueries.selectExpensesByDateRange(startDate, endDate)
             .asFlow()
             .mapToList(dispatcher)
             .map { expenses ->
@@ -52,34 +52,35 @@ class ExpenseRepositoryImpl(
     }
 
     override suspend fun addExpense(expense: Expense) = withContext(dispatcher) {
-        database.expenseTrackerQueries.expenseInsert(
+        database.expenseTrackerQueries.insertExpense(
+            id = expense.id.toString(),
             amount = expense.amount,
             description = expense.description,
-            categoryId = expense.categoryId,
+            category = expense.categoryId.toString(),
             date = expense.date.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
             type = expense.type.name,
             paymentMethod = expense.paymentMethod.name,
-            location = expense.location,
-            receiptImageUrl = expense.receiptImageUrl
+            accountId = expense.accountId,
+            receiptUrl = expense.receiptImageUrl
         )
     }
 
     override suspend fun updateExpense(expense: Expense) = withContext(dispatcher) {
-        database.expenseTrackerQueries.expenseUpdate(
+        database.expenseTrackerQueries.updateExpense(
             amount = expense.amount,
             description = expense.description,
-            categoryId = expense.categoryId,
+            category = expense.categoryId.toString(),
             date = expense.date.toInstant(TimeZone.currentSystemDefault()).toEpochMilliseconds(),
             type = expense.type.name,
             paymentMethod = expense.paymentMethod.name,
-            location = expense.location,
-            receiptImageUrl = expense.receiptImageUrl,
-            id = expense.id
+            accountId = expense.accountId,
+            receiptUrl = expense.receiptImageUrl,
+            id = expense.id.toString()
         )
     }
 
     override suspend fun deleteExpense(id: Long) = withContext(dispatcher) {
-        database.expenseTrackerQueries.expenseDelete(id)
+        database.expenseTrackerQueries.deleteExpense(id.toString())
     }
 
     override suspend fun getMonthlyReport(year: Int, month: Int): List<MonthlyReport> = withContext(dispatcher) {
@@ -96,7 +97,7 @@ class ExpenseRepositoryImpl(
                     totalExpense = report.expense_total ?: 0.0,
                     categoryDetails = listOf(
                         CategoryReport(
-                            categoryId = report.categoryId,
+                            categoryId = report.category.toLong(),
                             categoryName = report.category_name,
                             categoryIcon = report.category_icon,
                             categoryColor = report.category_color,
@@ -109,15 +110,15 @@ class ExpenseRepositoryImpl(
 
     private fun com.shashank.expense.tracker.db.Expense.toExpense(): Expense {
         return Expense(
-            id = id,
+            id = id.toLong(),
             amount = amount,
             description = description,
-            categoryId = categoryId,
+            categoryId = category.toLong(),
+            accountId = accountId?.toLong() ?: 0L,
             date = Instant.fromEpochMilliseconds(date).toLocalDateTime(TimeZone.currentSystemDefault()),
-            type = ExpenseType.valueOf(type),
-            paymentMethod = PaymentMethod.valueOf(paymentMethod ?: PaymentMethod.OTHER.name),
-            location = location,
-            receiptImageUrl = receiptImageUrl
+            type = TransactionType.valueOf(type),
+            paymentMethod = PaymentMethod.valueOf(paymentMethod),
+            receiptImageUrl = receiptUrl
         )
     }
 } 

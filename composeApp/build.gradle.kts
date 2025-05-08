@@ -4,8 +4,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
-    alias(libs.plugins.composeMultiplatform)
-    alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.jetbrainsCompose)
+    alias(libs.plugins.kotlinSerialization)
     id("app.cash.sqldelight") version "2.0.1"
     id("com.google.gms.google-services") version "4.4.1"
     id("com.google.firebase.crashlytics") version "2.9.9"
@@ -24,83 +24,101 @@ kotlin {
         iosX64(),
         iosArm64(),
         iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
+    ).forEach {
+        it.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
         }
     }
     
     sourceSets {
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-            
-            // SQLDelight
-            implementation("app.cash.sqldelight:android-driver:2.0.1")
-            implementation("net.zetetic:android-database-sqlcipher:4.5.4")
-            
-            // Firebase
-            implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
-            implementation("com.google.firebase:firebase-auth-ktx")
-            implementation("com.google.firebase:firebase-firestore-ktx")
-            implementation("com.google.firebase:firebase-analytics-ktx")
-            implementation("com.google.firebase:firebase-crashlytics-ktx")
-            
-            // DataStore
-            implementation("androidx.datastore:datastore-preferences:1.0.0")
-            
-            // Coil
-            implementation("io.coil-kt:coil-compose:2.5.0")
+        val commonMain by getting {
+            dependencies {
+                // Compose
+                implementation(compose.runtime)
+                implementation(compose.foundation)
+                implementation(compose.material3)
+                implementation(compose.ui)
+                implementation(compose.components.resources)
+                implementation(compose.components.uiToolingPreview)
+                
+                // SQLDelight
+                implementation(libs.sqldelight.runtime)
+                implementation(libs.sqldelight.coroutines)
+                implementation(libs.sqldelight.primitive)
+                
+                // Koin Core
+                implementation("io.insert-koin:koin-core:3.5.3")
+                
+                // Ktor
+                implementation("io.ktor:ktor-client-core:2.3.8")
+                implementation("io.ktor:ktor-client-content-negotiation:2.3.8")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.8")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+                
+                // DateTime
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                
+                // Coroutines
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                
+                // Navigation
+                implementation("cafe.adriel.voyager:voyager-navigator:1.0.0")
+                implementation("cafe.adriel.voyager:voyager-koin:1.0.0")
+                implementation("cafe.adriel.voyager:voyager-transitions:1.0.0")
+                
+                // Charts
+                implementation("com.patrykandpatrick.vico:compose:1.13.1")
+                implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
+            }
         }
         
-        commonMain.dependencies {
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.material3)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
-            implementation(libs.androidx.lifecycle.viewmodel)
-            implementation(libs.androidx.lifecycle.runtime.compose)
-            
-            // SQLDelight
-            implementation("app.cash.sqldelight:runtime:2.0.1")
-            implementation("app.cash.sqldelight:coroutines-extensions:2.0.1")
-            
-            // Koin
-            implementation("io.insert-koin:koin-core:3.5.3")
-            implementation("io.insert-koin:koin-compose:1.1.0")
-            implementation("io.insert-koin:koin-androidx-compose:3.5.3")
-            implementation("io.insert-koin:koin-androidx-compose-navigation:3.5.3")
-            
-            // Ktor
-            implementation("io.ktor:ktor-client-core:2.3.8")
-            implementation("io.ktor:ktor-client-content-negotiation:2.3.8")
-            implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.8")
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
-            
-            // DateTime
-            implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
-            
-            // Coroutines
-            implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
-            
-            // Navigation
-            implementation("cafe.adriel.voyager:voyager-navigator:1.0.0")
-            implementation("cafe.adriel.voyager:voyager-koin:1.0.0")
-            
-            // Charts
-            implementation("com.patrykandpatrick.vico:compose:1.13.1")
-            implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
+        val androidMain by getting {
+            dependencies {
+                // Android-specific Compose
+                implementation(compose.preview)
+                implementation(libs.androidx.activity.compose)
+                implementation(libs.androidx.lifecycle.viewmodel)
+                implementation(libs.androidx.lifecycle.runtime.compose)
+                
+                // Android-specific Koin
+                implementation("io.insert-koin:koin-androidx-compose:3.5.3")
+                implementation("io.insert-koin:koin-androidx-compose-navigation:3.5.3")
+                
+                // SQLDelight
+                implementation(libs.sqldelight.android)
+                implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+                
+                // Firebase
+                implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
+                implementation("com.google.firebase:firebase-auth-ktx")
+                implementation("com.google.firebase:firebase-firestore-ktx")
+                implementation("com.google.firebase:firebase-analytics-ktx")
+                implementation("com.google.firebase:firebase-crashlytics-ktx")
+                
+                // DataStore
+                implementation("androidx.datastore:datastore-preferences:1.0.0")
+                
+                // Coil
+                implementation("io.coil-kt:coil-compose:2.5.0")
+            }
         }
         
-        iosMain.dependencies {
-            // SQLDelight
-            implementation("app.cash.sqldelight:native-driver:2.0.1")
-            
-            // Ktor
-            implementation("io.ktor:ktor-client-darwin:2.3.8")
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+        val iosMain by creating {
+            dependsOn(commonMain)
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
+            dependencies {
+                // iOS-specific SQLDelight
+                implementation(libs.sqldelight.native)
+                
+                // iOS-specific Ktor
+                implementation("io.ktor:ktor-client-darwin:2.3.8")
+            }
         }
     }
 }
@@ -146,7 +164,6 @@ sqldelight {
             packageName.set("com.shashank.expense.tracker.db")
             dialect("app.cash.sqldelight:sqlite-3-18-dialect:2.0.1")
             verifyMigrations.set(true)
-            deriveSchemaFromMigrations.set(true)
         }
     }
 }

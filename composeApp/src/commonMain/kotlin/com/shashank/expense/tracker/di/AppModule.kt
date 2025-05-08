@@ -1,9 +1,11 @@
 package com.shashank.expense.tracker.di
 
+import com.shashank.expense.tracker.data.local.DataStorePreferences
+import com.shashank.expense.tracker.data.local.DataStorePreferencesFactory
 import com.shashank.expense.tracker.data.repository.BudgetRepositoryImpl
 import com.shashank.expense.tracker.data.repository.CategoryRepositoryImpl
 import com.shashank.expense.tracker.data.repository.ExpenseRepositoryImpl
-import com.shashank.expense.tracker.db.ExpenseTrackerDatabase
+import com.shashank.expense.tracker.db.AppDatabase
 import com.shashank.expense.tracker.domain.repository.BudgetRepository
 import com.shashank.expense.tracker.domain.repository.CategoryRepository
 import com.shashank.expense.tracker.domain.repository.ExpenseRepository
@@ -11,16 +13,22 @@ import com.shashank.expense.tracker.domain.usecase.*
 import com.shashank.expense.tracker.presentation.viewmodel.*
 import org.koin.dsl.module
 
+expect fun platformModule(): org.koin.core.module.Module
+
 val appModule = module {
-    // Database
-    single { ExpenseTrackerDatabase(get()) }
+    includes(platformModule())
+
+    // Core dependencies
+    single { AppDatabase(get()) }
+    single { DataStorePreferencesFactory(get()) }
+    single { get<DataStorePreferencesFactory>().create() }
     
     // Repositories
     single<ExpenseRepository> { ExpenseRepositoryImpl(get(), get()) }
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
     single<BudgetRepository> { BudgetRepositoryImpl(get()) }
     
-    // Use Cases
+    // Use cases
     single { GetExpensesUseCase(get()) }
     single { GetCategoriesUseCase(get()) }
     single { GetBudgetsUseCase(get()) }

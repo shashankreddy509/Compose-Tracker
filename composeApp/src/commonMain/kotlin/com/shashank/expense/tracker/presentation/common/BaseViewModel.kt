@@ -1,43 +1,39 @@
 package com.shashank.expense.tracker.presentation.common
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-abstract class BaseViewModel<State, Event> : ViewModel() {
-    private val _uiState = MutableStateFlow<UiState<State>>(UiState.Loading)
-    val uiState: StateFlow<UiState<State>> = _uiState.asStateFlow()
+expect abstract class CommonViewModel() {
+    val viewModelScope: CoroutineScope
+    protected open fun onCleared()
+    fun <T> Flow<T>.stateInViewModel(initialValue: T): StateFlow<T>
+}
 
-    private val _uiEvent = Channel<UiEvent>()
-    val uiEvent = _uiEvent.receiveAsFlow()
+abstract class BaseViewModel<State, Event>(initialState: State) : CommonViewModel() {
+    private val _state = MutableStateFlow(initialState)
+    val state: StateFlow<State> = _state
 
-    abstract fun handleEvent(event: Event)
+    private val _event = MutableSharedFlow<Event>()
+    val event: Flow<Event> = _event
 
-    protected fun updateState(state: UiState<State>) {
-        _uiState.value = state
+    protected fun setState(reducer: State.() -> State) {
+        val newState = _state.value.reducer()
+        _state.value = newState
     }
 
-    protected fun sendEvent(event: UiEvent) {
+    protected fun sendEvent(event: Event) {
         viewModelScope.launch {
-            _uiEvent.send(event)
+            _event.emit(event)
         }
     }
 
-    protected fun <T> Flow<Result<T>>.collectResult(
-        onSuccess: (T) -> Unit,
-        onError: (Exception) -> Unit,
-        onLoading: () -> Unit
-    ) {
+    protected fun <T> Flow<T>.collectInViewModel(action: suspend (T) -> Unit) {
         viewModelScope.launch {
-            collect { result ->
-                when (result) {
-                    is Result.Success -> onSuccess(result.data)
-                    is Result.Error -> onError(result.exception)
-                    Result.Loading -> onLoading()
-                }
-            }
+            collect { action(it) }
         }
     }
 } 

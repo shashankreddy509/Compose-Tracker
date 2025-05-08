@@ -5,5 +5,5 @@ data class Category(
     val name: String,
     val icon: String,
     val color: Long,
-    val type: ExpenseType
+    val type: TransactionType
 ) 

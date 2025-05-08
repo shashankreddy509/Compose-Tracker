@@ -1,130 +1,208 @@
-CREATE TABLE Expense (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    amount REAL NOT NULL CHECK (amount >= 0),
-    description TEXT NOT NULL,
-    categoryId INTEGER NOT NULL,
-    date INTEGER NOT NULL,
-    type TEXT NOT NULL CHECK (type IN ('INCOME', 'EXPENSE')),
-    paymentMethod TEXT CHECK (paymentMethod IN ('CASH', 'CREDIT_CARD', 'DEBIT_CARD', 'BANK_TRANSFER', 'UPI', 'OTHER')),
-    location TEXT,
-    receiptImageUrl TEXT,
-    FOREIGN KEY (categoryId) REFERENCES Category(id) ON DELETE CASCADE,
-    CHECK (length(description) > 0)
+CREATE TABLE Category (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    icon TEXT NOT NULL,
+    color TEXT NOT NULL
 );
 
-CREATE INDEX expense_category_idx ON Expense(categoryId);
-CREATE INDEX expense_date_idx ON Expense(date);
-CREATE INDEX expense_type_idx ON Expense(type);
-
-CREATE TABLE Category (
+CREATE TABLE Account (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL UNIQUE,
-    icon TEXT NOT NULL,
-    color TEXT NOT NULL,
+    name TEXT NOT NULL,
+    balance REAL NOT NULL,
+    type TEXT NOT NULL,
+    currency TEXT NOT NULL,
     CHECK (length(name) > 0)
 );
 
-CREATE TABLE Budget (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    categoryId INTEGER NOT NULL,
+CREATE TABLE Expense (
+    id TEXT NOT NULL PRIMARY KEY,
     amount REAL NOT NULL CHECK (amount > 0),
+    description TEXT NOT NULL,
+    category TEXT NOT NULL,
+    date INTEGER NOT NULL,
+    type TEXT NOT NULL CHECK (type IN ('INCOME', 'EXPENSE')),
+    paymentMethod TEXT NOT NULL,
+    accountId INTEGER,
+    receiptUrl TEXT,
+    FOREIGN KEY (accountId) REFERENCES Account(id) ON DELETE SET NULL
+);
+
+CREATE TABLE Budget (
+    id TEXT NOT NULL PRIMARY KEY,
+    amount REAL NOT NULL CHECK (amount > 0),
+    spent REAL NOT NULL DEFAULT 0,
+    remaining REAL NOT NULL,
+    category TEXT NOT NULL,
     startDate INTEGER NOT NULL,
     endDate INTEGER NOT NULL,
-    FOREIGN KEY (categoryId) REFERENCES Category(id) ON DELETE CASCADE,
     CHECK (endDate > startDate)
 );
 
-CREATE INDEX budget_category_idx ON Budget(categoryId);
+CREATE TABLE Goal (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    targetAmount REAL NOT NULL,
+    currentAmount REAL NOT NULL,
+    deadline INTEGER NOT NULL,
+    categoryId INTEGER NOT NULL,
+    FOREIGN KEY (categoryId) REFERENCES Category(id) ON DELETE CASCADE,
+    CHECK (length(name) > 0),
+    CHECK (targetAmount > 0),
+    CHECK (currentAmount >= 0),
+    CHECK (deadline > 0)
+);
+
+-- Indexes
+CREATE INDEX expense_category_idx ON Expense(category);
+CREATE INDEX expense_date_idx ON Expense(date);
+CREATE INDEX expense_type_idx ON Expense(type);
+CREATE INDEX expense_account_idx ON Expense(accountId);
+CREATE INDEX budget_category_idx ON Budget(category);
 CREATE INDEX budget_date_idx ON Budget(startDate, endDate);
+CREATE INDEX goal_category_idx ON Goal(categoryId);
 
 -- Expense queries
-expenseSelectAll:
+selectAllExpenses:
 SELECT *
 FROM Expense
 ORDER BY date DESC;
 
-expenseSelectByCategory:
+selectExpenseById:
 SELECT *
 FROM Expense
-WHERE categoryId = ?
+WHERE id = ?;
+
+selectExpensesByCategory:
+SELECT *
+FROM Expense
+WHERE category = ?
 ORDER BY date DESC;
 
-expenseSelectByDateRange:
+selectExpensesByDateRange:
 SELECT *
 FROM Expense
 WHERE date BETWEEN ? AND ?
 ORDER BY date DESC;
 
-expenseSelectById:
-SELECT *
-FROM Expense
-WHERE id = ?;
+insertExpense:
+INSERT INTO Expense(id, amount, description, category, date, type, paymentMethod, accountId, receiptUrl)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
-expenseInsert:
-INSERT INTO Expense (amount, description, categoryId, date, type, paymentMethod, location, receiptImageUrl)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-
-expenseUpdate:
+updateExpense:
 UPDATE Expense
-SET amount = ?, description = ?, categoryId = ?, date = ?, type = ?, paymentMethod = ?, location = ?, receiptImageUrl = ?
+SET amount = ?, description = ?, category = ?, date = ?, type = ?, paymentMethod = ?, accountId = ?, receiptUrl = ?
 WHERE id = ?;
 
-expenseDelete:
+deleteExpense:
 DELETE FROM Expense
 WHERE id = ?;
 
 -- Category queries
-categorySelectAll:
+selectAllCategories:
 SELECT *
 FROM Category
-ORDER BY name;
+ORDER BY name ASC;
 
-categorySelectById:
+selectCategoryById:
 SELECT *
 FROM Category
 WHERE id = ?;
 
-categoryInsert:
-INSERT INTO Category (name, icon, color)
-VALUES (?, ?, ?);
+insertCategory:
+INSERT INTO Category(id, name, icon, color)
+VALUES (?, ?, ?, ?);
 
-categoryUpdate:
+updateCategory:
 UPDATE Category
 SET name = ?, icon = ?, color = ?
 WHERE id = ?;
 
-categoryDelete:
+deleteCategory:
 DELETE FROM Category
 WHERE id = ?;
 
--- Budget queries
-budgetSelectAll:
+-- Account queries
+accountSelectAll:
 SELECT *
-FROM Budget
-ORDER BY startDate DESC;
+FROM Account
+ORDER BY name;
 
-budgetSelectById:
+accountSelectById:
 SELECT *
-FROM Budget
+FROM Account
 WHERE id = ?;
 
-budgetSelectByCategory:
-SELECT *
-FROM Budget
-WHERE categoryId = ?
-ORDER BY startDate DESC;
-
-budgetInsert:
-INSERT INTO Budget (categoryId, amount, startDate, endDate)
+accountInsert:
+INSERT INTO Account (name, balance, type, currency)
 VALUES (?, ?, ?, ?);
 
-budgetUpdate:
-UPDATE Budget
-SET categoryId = ?, amount = ?, startDate = ?, endDate = ?
+accountUpdate:
+UPDATE Account
+SET name = ?, balance = ?, type = ?, currency = ?
 WHERE id = ?;
 
-budgetDelete:
+accountDelete:
+DELETE FROM Account
+WHERE id = ?;
+
+-- Budget queries
+selectAllBudgets:
+SELECT *
+FROM Budget
+ORDER BY startDate DESC;
+
+selectBudgetById:
+SELECT *
+FROM Budget
+WHERE id = ?;
+
+selectBudgetsByCategory:
+SELECT *
+FROM Budget
+WHERE category = ?
+ORDER BY startDate DESC;
+
+insertBudget:
+INSERT INTO Budget(id, amount, spent, remaining, category, startDate, endDate)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateBudget:
+UPDATE Budget
+SET amount = ?, spent = ?, remaining = ?, category = ?, startDate = ?, endDate = ?
+WHERE id = ?;
+
+deleteBudget:
 DELETE FROM Budget
+WHERE id = ?;
+
+-- Goal queries
+goalSelectAll:
+SELECT *
+FROM Goal
+ORDER BY deadline;
+
+goalSelectById:
+SELECT *
+FROM Goal
+WHERE id = ?;
+
+goalSelectByCategory:
+SELECT *
+FROM Goal
+WHERE categoryId = ?
+ORDER BY deadline;
+
+goalInsert:
+INSERT INTO Goal (name, targetAmount, currentAmount, deadline, categoryId)
+VALUES (?, ?, ?, ?, ?);
+
+goalUpdate:
+UPDATE Goal
+SET name = ?, targetAmount = ?, currentAmount = ?, deadline = ?, categoryId = ?
+WHERE id = ?;
+
+goalDelete:
+DELETE FROM Goal
 WHERE id = ?;
 
 -- Report queries
@@ -134,13 +212,13 @@ SELECT
     strftime('%Y', datetime(e.date / 1000, 'unixepoch')) AS year,
     SUM(CASE WHEN e.type = 'INCOME' THEN e.amount ELSE 0 END) AS income_total,
     SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) AS expense_total,
-    e.categoryId,
+    e.category,
     c.name AS category_name,
     c.icon AS category_icon,
     c.color AS category_color,
     SUM(CASE WHEN e.type = 'EXPENSE' THEN e.amount ELSE 0 END) AS category_amount
 FROM Expense e
-JOIN Category c ON e.categoryId = c.id
+JOIN Category c ON e.category = c.id
 WHERE strftime('%Y-%m', datetime(e.date / 1000, 'unixepoch')) = ?
-GROUP BY e.categoryId
+GROUP BY e.category
 ORDER BY category_amount DESC; 

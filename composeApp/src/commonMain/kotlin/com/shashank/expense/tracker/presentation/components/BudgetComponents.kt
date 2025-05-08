@@ -7,6 +7,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.shashank.expense.tracker.domain.model.Budget
+import com.shashank.expense.tracker.util.DateTimeUtil
+import com.shashank.expense.tracker.util.StringFormatter
 import kotlinx.datetime.*
 import kotlinx.datetime.toJavaLocalDateTime
 import java.time.format.DateTimeFormatter
@@ -30,11 +32,11 @@ fun BudgetProgressBar(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "$${String.format("%.2f", currentAmount)}",
+                text = StringFormatter.format("$%.2f", currentAmount),
                 style = MaterialTheme.typography.bodySmall
             )
             Text(
-                text = "$${String.format("%.2f", totalAmount)}",
+                text = StringFormatter.format("$%.2f", totalAmount),
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -44,42 +46,61 @@ fun BudgetProgressBar(
 @Composable
 fun BudgetCard(
     budget: Budget,
-    currentSpending: Double,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    onBudgetClick: (Budget) -> Unit
 ) {
     Card(
-        onClick = onClick,
-        modifier = modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        onClick = { onBudgetClick(budget) }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
+            Text(
+                text = StringFormatter.format("Budget: $%.2f", budget.amount),
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = StringFormatter.format("Spent: $%.2f", budget.spent),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = StringFormatter.format("Remaining: $%.2f", budget.remaining),
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Text(
+                text = "Category: ${budget.category}",
+                style = MaterialTheme.typography.bodyMedium
+            )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Budget",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Text(
-                    text = "$${String.format("%.2f", budget.amount)}",
-                    style = MaterialTheme.typography.titleMedium
+                    text = "Period: ${DateTimeUtil.formatMonthYear(budget.startDate)} - ${DateTimeUtil.formatMonthYear(budget.endDate)}",
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
-            Spacer(modifier = Modifier.height(8.dp))
-            BudgetProgressBar(
-                currentAmount = currentSpending,
-                totalAmount = budget.amount
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Period: ${formatDateRange(budget.startDate, budget.endDate)}",
-                style = MaterialTheme.typography.bodySmall
+        }
+    }
+}
+
+@Composable
+fun BudgetList(
+    budgets: List<Budget>,
+    onBudgetClick: (Budget) -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        budgets.forEach { budget ->
+            BudgetCard(
+                budget = budget,
+                onBudgetClick = onBudgetClick
             )
         }
     }
@@ -101,7 +122,7 @@ fun AmountTrend(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "${if (trend >= 0) "+" else ""}${String.format("%.1f", trendPercentage)}%",
+            text = StringFormatter.format("%s%.1f%%", if (trend >= 0) "+" else "", trendPercentage),
             color = when {
                 trend > 0 -> MaterialTheme.colorScheme.primary
                 trend < 0 -> MaterialTheme.colorScheme.error

@@ -3,7 +3,7 @@ package com.shashank.expense.tracker.presentation.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.shashank.expense.tracker.domain.model.Expense
-import com.shashank.expense.tracker.domain.model.ExpenseType
+import com.shashank.expense.tracker.domain.model.TransactionType
 import com.shashank.expense.tracker.domain.model.PaymentMethod
 import com.shashank.expense.tracker.domain.usecase.AddExpenseUseCase
 import com.shashank.expense.tracker.domain.usecase.GetCategoriesUseCase
@@ -19,7 +19,8 @@ data class AddExpenseState(
     val amount: String = "",
     val description: String = "",
     val categoryId: Long? = null,
-    val type: ExpenseType = ExpenseType.EXPENSE,
+    val accountId: Long? = null,
+    val type: TransactionType = TransactionType.EXPENSE,
     val paymentMethod: PaymentMethod = PaymentMethod.CASH,
     val location: String = "",
     val receiptImageUrl: String? = null,
@@ -47,7 +48,11 @@ class AddExpenseViewModel(
         _state.value = _state.value.copy(categoryId = categoryId)
     }
 
-    fun onTypeChange(type: ExpenseType) {
+    fun onAccountChange(accountId: Long) {
+        _state.value = _state.value.copy(accountId = accountId)
+    }
+
+    fun onTypeChange(type: TransactionType) {
         _state.value = _state.value.copy(type = type)
     }
 
@@ -86,11 +91,21 @@ class AddExpenseViewModel(
                     return@launch
                 }
 
+                val accountId = _state.value.accountId
+                if (accountId == null) {
+                    _state.value = _state.value.copy(
+                        isLoading = false,
+                        error = "Please select an account"
+                    )
+                    return@launch
+                }
+
                 val expense = Expense(
                     id = 0, // Let the database generate the ID
                     amount = amount,
                     description = _state.value.description,
                     categoryId = categoryId,
+                    accountId = accountId,
                     date = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()),
                     type = _state.value.type,
                     paymentMethod = _state.value.paymentMethod,

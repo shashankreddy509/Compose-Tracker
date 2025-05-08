@@ -1,5 +1,4 @@
 rootProject.name = "Expense-Tracker-compose"
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 pluginManagement {
     repositories {
