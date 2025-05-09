@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -52,10 +53,12 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import com.shashank.expense.tracker.core.navigation.ScreenRoute
 import com.shashank.expense.tracker.core.navigation.navigateToScreen
-import expense_tracker_compose.composeapp.generated.resources.Res
-import expense_tracker_compose.composeapp.generated.resources.ic_google
+import com.shashank.expense.tracker.domain.model.AuthEvent
+import com.shashank.expense.tracker.domain.model.AuthUiState
+import com.shashank.expense.tracker.presentation.viewmodel.AuthViewModel
+import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @ExperimentalResourceApi
 @ExperimentalMaterial3Api
@@ -65,101 +68,53 @@ class RegisterScreen : Screen, ScreenProvider {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
-        RegisterScreen({ route ->
-            navigateToScreen(navigator, route)
-        }, navigator)
+        val viewModel: AuthViewModel = koinViewModel()
+
+        // Collect auth events
+        LaunchedEffect(Unit) {
+            viewModel.eventFlow.collectLatest { event ->
+                when (event) {
+                    is AuthEvent.RegisterSuccess -> {
+                        navigateToScreen(navigator, ScreenRoute.Dashboard)
+                    }
+                    is AuthEvent.Error -> {
+                        // Error is already handled in the UI state
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        RegisterScreen(
+            uiState = viewModel.uiState,
+            onEmailChange = viewModel::onEmailChange,
+            onPasswordChange = viewModel::onPasswordChange,
+            onConfirmPasswordChange = viewModel::onConfirmPasswordChange,
+            onRegisterClick = viewModel::register,
+            onLoginClick = { navigateToScreen(navigator, ScreenRoute.Login) },
+            onBackClick = { navigator?.pop() }
+        )
     }
 
     @Composable
     fun RegisterScreen(
-        onNavigateToScreen: (ScreenRoute) -> Unit,
-        navigator: Navigator?
+        uiState: AuthUiState,
+        onEmailChange: (String) -> Unit,
+        onPasswordChange: (String) -> Unit,
+        onConfirmPasswordChange: (String) -> Unit,
+        onRegisterClick: () -> Unit,
+        onLoginClick: () -> Unit,
+        onBackClick: () -> Unit
     ) {
-//        val viewModel: AuthViewModel = koinViewModel()
-        var name by remember { mutableStateOf("") }
-        var email by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
-        var confirmPassword by remember { mutableStateOf("") }
         var passwordVisible by remember { mutableStateOf(false) }
         var confirmPasswordVisible by remember { mutableStateOf(false) }
-
-        var nameError by remember { mutableStateOf<String?>(null) }
-        var emailError by remember { mutableStateOf<String?>(null) }
-        var passwordError by remember { mutableStateOf<String?>(null) }
-        var confirmPasswordError by remember { mutableStateOf<String?>(null) }
-        var isLoading by remember { mutableStateOf(false) }
-        var authError by remember { mutableStateOf<String?>(null) }
-
-        fun validateName(name: String): Boolean {
-            return if (name.trim().isEmpty()) {
-                nameError = "Name is required"
-                false
-            } else {
-                nameError = null
-                true
-            }
-        }
-
-        fun validateEmail(email: String): Boolean {
-            return if (email.isEmpty()) {
-                emailError = "Email is required"
-                false
-            } else if (!email.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$"))) {
-                emailError = "Please enter a valid email"
-                false
-            } else {
-                emailError = null
-                true
-            }
-        }
-
-        fun validatePassword(password: String): Boolean {
-            return if (password.isEmpty()) {
-                passwordError = "Password is required"
-                false
-            } else if (password.length < 6) {
-                passwordError = "Password must be at least 6 characters"
-                false
-            } else {
-                passwordError = null
-                true
-            }
-        }
-
-        fun validateConfirmPassword(confirmPassword: String): Boolean {
-            return if (confirmPassword.isEmpty()) {
-                confirmPasswordError = "Confirm password is required"
-                false
-            } else if (confirmPassword.length < 6) {
-                confirmPasswordError = "Password must be at least 6 characters"
-                false
-            } else if (confirmPassword != password) {
-                confirmPasswordError = "Passwords do not match"
-                false
-            } else {
-                confirmPasswordError = null
-                true
-            }
-        }
-
-        fun validateAndSignUp() {
-            val isNameValid = validateName(name)
-            val isEmailValid = validateEmail(email)
-            val isPasswordValid = validatePassword(password)
-            val isConfirmPasswordValid = validateConfirmPassword(confirmPassword)
-
-            if (isNameValid && isEmailValid && isPasswordValid && isConfirmPasswordValid) {
-//                viewModel.signUp(email, password)
-                onNavigateToScreen(ScreenRoute.Dashboard)
-            }
-        }
 
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Sign Up") },
+                    title = { Text("Register") },
                     navigationIcon = {
-                        IconButton(onClick = { navigator?.pop() }) {
+                        IconButton(onClick = onBackClick) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                         }
                     }
@@ -169,59 +124,16 @@ class RegisterScreen : Screen, ScreenProvider {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color(0xFFFCFCFC))
                     .padding(padding)
                     .verticalScroll(rememberScrollState())
                     .padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = "Create Account",
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier.padding(vertical = 32.dp)
-                )
-
-                // Name field
                 Column(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
-                        value = name,
-                        onValueChange = { newValue ->
-                            name = newValue
-                            if (nameError != null) validateName(newValue)
-                        },
-                        label = { Text("Name") },
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = MaterialTheme.typography.bodyLarge.copy(
-                            fontSize = 16.sp
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = if (nameError != null) Color.Red else Color.LightGray,
-                            focusedBorderColor = if (nameError != null) Color.Red else Color(
-                                0xFF6B4EFF
-                            )
-                        ),
-                        isError = nameError != null
-                    )
-                    if (nameError != null) {
-                        Text(
-                            text = nameError!!,
-                            color = Color.Red,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(start = 8.dp, top = 4.dp)
-                        )
-                    }
-                }
-
-                // Email field
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { newValue ->
-                            email = newValue
-                            if (emailError != null) validateEmail(newValue)
-                        },
+                        value = uiState.email,
+                        onValueChange = onEmailChange,
                         label = { Text("Email") },
                         modifier = Modifier.fillMaxWidth(),
                         textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -232,16 +144,14 @@ class RegisterScreen : Screen, ScreenProvider {
                         ),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = if (emailError != null) Color.Red else Color.LightGray,
-                            focusedBorderColor = if (emailError != null) Color.Red else Color(
-                                0xFF6B4EFF
-                            )
+                            unfocusedBorderColor = if (uiState.emailError != null) Color.Red else Color.LightGray,
+                            focusedBorderColor = if (uiState.emailError != null) Color.Red else Color(0xFF6B4EFF)
                         ),
-                        isError = emailError != null
+                        isError = uiState.emailError != null
                     )
-                    if (emailError != null) {
+                    if (uiState.emailError != null) {
                         Text(
-                            text = emailError!!,
+                            text = uiState.emailError!!,
                             color = Color.Red,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 8.dp, top = 4.dp)
@@ -249,17 +159,10 @@ class RegisterScreen : Screen, ScreenProvider {
                     }
                 }
 
-                // Password field
                 Column(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
-                        value = password,
-                        onValueChange = { newValue ->
-                            password = newValue
-                            if (passwordError != null) validatePassword(newValue)
-                            if (confirmPassword.isNotEmpty()) validateConfirmPassword(
-                                confirmPassword
-                            )
-                        },
+                        value = uiState.password,
+                        onValueChange = onPasswordChange,
                         label = { Text("Password") },
                         modifier = Modifier.fillMaxWidth(),
                         textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -277,16 +180,14 @@ class RegisterScreen : Screen, ScreenProvider {
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = if (passwordError != null) Color.Red else Color.LightGray,
-                            focusedBorderColor = if (passwordError != null) Color.Red else Color(
-                                0xFF6B4EFF
-                            )
+                            unfocusedBorderColor = if (uiState.passwordError != null) Color.Red else Color.LightGray,
+                            focusedBorderColor = if (uiState.passwordError != null) Color.Red else Color(0xFF6B4EFF)
                         ),
-                        isError = passwordError != null
+                        isError = uiState.passwordError != null
                     )
-                    if (passwordError != null) {
+                    if (uiState.passwordError != null) {
                         Text(
-                            text = passwordError!!,
+                            text = uiState.passwordError!!,
                             color = Color.Red,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 8.dp, top = 4.dp)
@@ -294,14 +195,10 @@ class RegisterScreen : Screen, ScreenProvider {
                     }
                 }
 
-                // Confirm Password field
                 Column(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
-                        value = confirmPassword,
-                        onValueChange = { newValue ->
-                            confirmPassword = newValue
-                            if (confirmPasswordError != null) validateConfirmPassword(newValue)
-                        },
+                        value = uiState.confirmPassword,
+                        onValueChange = onConfirmPasswordChange,
                         label = { Text("Confirm Password") },
                         modifier = Modifier.fillMaxWidth(),
                         textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -309,27 +206,24 @@ class RegisterScreen : Screen, ScreenProvider {
                         ),
                         visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
-                            IconButton(onClick = {
-                                confirmPasswordVisible = !confirmPasswordVisible
-                            }) {
+                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                                 Text(
                                     if (confirmPasswordVisible) "Hide" else "Show",
-                                    color = Color(0xFF6B4EFF)
+                                    color = Color(0xFF6B4EFF),
+                                    fontSize = 12.sp
                                 )
                             }
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = if (confirmPasswordError != null) Color.Red else Color.LightGray,
-                            focusedBorderColor = if (confirmPasswordError != null) Color.Red else Color(
-                                0xFF6B4EFF
-                            )
+                            unfocusedBorderColor = if (uiState.confirmPasswordError != null) Color.Red else Color.LightGray,
+                            focusedBorderColor = if (uiState.confirmPasswordError != null) Color.Red else Color(0xFF6B4EFF)
                         ),
-                        isError = confirmPasswordError != null
+                        isError = uiState.confirmPasswordError != null
                     )
-                    if (confirmPasswordError != null) {
+                    if (uiState.confirmPasswordError != null) {
                         Text(
-                            text = confirmPasswordError!!,
+                            text = uiState.confirmPasswordError!!,
                             color = Color.Red,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 8.dp, top = 4.dp)
@@ -337,7 +231,7 @@ class RegisterScreen : Screen, ScreenProvider {
                     }
                 }
 
-                authError?.let {
+                uiState.authError?.let {
                     Text(
                         text = it,
                         color = Color.Red,
@@ -349,7 +243,7 @@ class RegisterScreen : Screen, ScreenProvider {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { validateAndSignUp() },
+                    onClick = onRegisterClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
@@ -357,48 +251,20 @@ class RegisterScreen : Screen, ScreenProvider {
                         containerColor = Color(0xFF6B4EFF)
                     ),
                     shape = RoundedCornerShape(16.dp),
-                    enabled = !isLoading
+                    enabled = !uiState.isLoading
                 ) {
-                    if (isLoading) {
+                    if (uiState.isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     } else {
                         Text(
-                            "Sign Up",
+                            "Register",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold
                         )
                     }
-                }
-
-                Text(
-                    "Or with",
-                    color = Color.Gray
-                )
-
-                OutlinedButton(
-                    onClick = { },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.Black
-                    )
-                ) {
-                    Image(
-                        painter = painterResource(Res.drawable.ic_google),
-                        contentDescription = "Google logo",
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        "Sign up with Google",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
                 }
 
                 Row(
@@ -410,7 +276,7 @@ class RegisterScreen : Screen, ScreenProvider {
                         "Already have an account? ",
                         color = Color.Gray
                     )
-                    TextButton(onClick = { onNavigateToScreen(ScreenRoute.Login) }) {
+                    TextButton(onClick = onLoginClick) {
                         Text(
                             "Login",
                             color = Color(0xFF6B4EFF),
@@ -420,6 +286,5 @@ class RegisterScreen : Screen, ScreenProvider {
                 }
             }
         }
-
     }
 } 

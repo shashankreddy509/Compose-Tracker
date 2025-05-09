@@ -48,28 +48,30 @@ kotlin {
                 implementation(libs.sqldelight.primitive)
                 
                 // Koin Core
-                implementation("io.insert-koin:koin-core:3.5.3")
+                implementation(libs.insert.koin.koin.core)
+                implementation(libs.koin.compose)
+                implementation(libs.koin.compose.viewmodel)
                 
                 // Ktor
-                implementation("io.ktor:ktor-client-core:2.3.8")
-                implementation("io.ktor:ktor-client-content-negotiation:2.3.8")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.8")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.kotlinx.serialization.json)
                 
                 // DateTime
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
+                implementation(libs.jetbrains.kotlinx.datetime)
                 
                 // Coroutines
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+                implementation(libs.kotlinx.coroutines.core)
                 
                 // Navigation
-                implementation("cafe.adriel.voyager:voyager-navigator:1.0.0")
-                implementation("cafe.adriel.voyager:voyager-koin:1.0.0")
-                implementation("cafe.adriel.voyager:voyager-transitions:1.0.0")
+                implementation(libs.voyager.navigator)
+                implementation(libs.voyager.koin)
+                implementation(libs.voyager.transitions)
                 
                 // Charts
-                implementation("com.patrykandpatrick.vico:compose:1.13.1")
-                implementation("com.patrykandpatrick.vico:compose-m3:1.13.1")
+                implementation(libs.compose)
+                implementation(libs.compose.m3)
             }
         }
         
@@ -82,25 +84,23 @@ kotlin {
                 implementation(libs.androidx.lifecycle.runtime.compose)
                 
                 // Android-specific Koin
-                implementation("io.insert-koin:koin-androidx-compose:3.5.3")
-                implementation("io.insert-koin:koin-androidx-compose-navigation:3.5.3")
-                
+                implementation(libs.koin.android)
+
                 // SQLDelight
                 implementation(libs.sqldelight.android)
-                implementation("net.zetetic:android-database-sqlcipher:4.5.4")
+                implementation(libs.android.database.sqlcipher)
                 
                 // Firebase
-                implementation(platform("com.google.firebase:firebase-bom:32.7.2"))
-                implementation("com.google.firebase:firebase-auth-ktx")
-                implementation("com.google.firebase:firebase-firestore-ktx")
-                implementation("com.google.firebase:firebase-analytics-ktx")
-                implementation("com.google.firebase:firebase-crashlytics-ktx")
+                //Firebase
+                implementation(libs.firebase.auth)
+                implementation(libs.firebase.firestore)
+                implementation(libs.stately.common)
                 
                 // DataStore
-                implementation("androidx.datastore:datastore-preferences:1.0.0")
+                implementation(libs.androidx.datastore.preferences)
                 
                 // Coil
-                implementation("io.coil-kt:coil-compose:2.5.0")
+                implementation(libs.coil.compose)
             }
         }
         
@@ -117,7 +117,7 @@ kotlin {
                 implementation(libs.sqldelight.native)
                 
                 // iOS-specific Ktor
-                implementation("io.ktor:ktor-client-darwin:2.3.8")
+                implementation(libs.ktor.client.darwin)
             }
         }
     }

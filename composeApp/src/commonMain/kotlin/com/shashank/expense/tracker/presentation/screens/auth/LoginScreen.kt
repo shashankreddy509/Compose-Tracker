@@ -25,10 +25,16 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import com.shashank.expense.tracker.core.navigation.ScreenRoute
 import com.shashank.expense.tracker.core.navigation.navigateToScreen
+import com.shashank.expense.tracker.domain.model.AuthEvent
+import com.shashank.expense.tracker.domain.model.AuthUiState
+import com.shashank.expense.tracker.presentation.viewmodel.AuthViewModel
 import expense_tracker_compose.composeapp.generated.resources.Res
 import expense_tracker_compose.composeapp.generated.resources.ic_google
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 
 @ExperimentalResourceApi
 @ExperimentalMaterial3Api
@@ -38,67 +44,53 @@ class LoginScreen : Screen, ScreenProvider {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
-        LoginScreen({ route ->
-            navigateToScreen(navigator, route)
-        }, navigator)
+        val viewModel: AuthViewModel = koinViewModel()
+        val scope = rememberCoroutineScope()
+
+        // Collect auth events
+        LaunchedEffect(Unit) {
+            viewModel.eventFlow.collectLatest { event ->
+                when (event) {
+                    is AuthEvent.LoginSuccess -> {
+                        navigateToScreen(navigator, ScreenRoute.Dashboard)
+                    }
+                    is AuthEvent.Error -> {
+                        // Error is already handled in the UI state
+                    }
+                    else -> {}
+                }
+            }
+        }
+
+        LoginScreen(
+            uiState = viewModel.uiState,
+            onEmailChange = viewModel::onEmailChange,
+            onPasswordChange = viewModel::onPasswordChange,
+            onLoginClick = viewModel::login,
+            onGoogleLoginClick = { /* TODO: Implement Google login */ },
+            onRegisterClick = { navigateToScreen(navigator, ScreenRoute.Register) },
+            onBackClick = { navigator?.pop() }
+        )
     }
 
     @Composable
     fun LoginScreen(
-        onNavigateToScreen: (ScreenRoute) -> Unit,
-        navigator: Navigator?
+        uiState: AuthUiState,
+        onEmailChange: (String) -> Unit,
+        onPasswordChange: (String) -> Unit,
+        onLoginClick: () -> Unit,
+        onGoogleLoginClick: () -> Unit,
+        onRegisterClick: () -> Unit,
+        onBackClick: () -> Unit
     ) {
-        var email by remember { mutableStateOf("") }
-        var password by remember { mutableStateOf("") }
         var passwordVisible by remember { mutableStateOf(false) }
-        var emailError by remember { mutableStateOf<String?>(null) }
-        var passwordError by remember { mutableStateOf<String?>(null) }
-        var authError by remember { mutableStateOf<String?>(null) }
-        var isLoading by remember { mutableStateOf(false) }
-//        val viewModel: LoginViewModel = viewModel()
-
-        fun validateEmail(email: String): Boolean {
-            return if (email.isEmpty()) {
-                emailError = "Email is required"
-                false
-            } else if (!email.matches(Regex("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\$"))) {
-                emailError = "Please enter a valid email"
-                false
-            } else {
-                emailError = null
-                true
-            }
-        }
-
-        fun validatePassword(password: String): Boolean {
-            return if (password.isEmpty()) {
-                passwordError = "Password is required"
-                false
-            } else if (password.length < 6) {
-                passwordError = "Password must be at least 6 characters"
-                false
-            } else {
-                passwordError = null
-                true
-            }
-        }
-
-        fun validateAndLogin() {
-            val isEmailValid = validateEmail(email)
-            val isPasswordValid = validatePassword(password)
-
-            if (isEmailValid && isPasswordValid) {
-//                viewModel.signIn(email, password)
-                onNavigateToScreen(ScreenRoute.Dashboard)
-            }
-        }
 
         Scaffold(
             topBar = {
                 TopAppBar(
                     title = { Text("Login") },
                     navigationIcon = {
-                        IconButton(onClick = { navigator?.pop() }) {
+                        IconButton(onClick = onBackClick) {
                             Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                         }
                     }
@@ -116,11 +108,8 @@ class LoginScreen : Screen, ScreenProvider {
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
-                        value = email,
-                        onValueChange = { newValue ->
-                            email = newValue
-                            if (emailError != null) validateEmail(newValue)
-                        },
+                        value = uiState.email,
+                        onValueChange = onEmailChange,
                         label = { Text("Email") },
                         modifier = Modifier.fillMaxWidth(),
                         textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -131,16 +120,14 @@ class LoginScreen : Screen, ScreenProvider {
                         ),
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = if (emailError != null) Color.Red else Color.LightGray,
-                            focusedBorderColor = if (emailError != null) Color.Red else Color(
-                                0xFF6B4EFF
-                            )
+                            unfocusedBorderColor = if (uiState.emailError != null) Color.Red else Color.LightGray,
+                            focusedBorderColor = if (uiState.emailError != null) Color.Red else Color(0xFF6B4EFF)
                         ),
-                        isError = emailError != null
+                        isError = uiState.emailError != null
                     )
-                    if (emailError != null) {
+                    if (uiState.emailError != null) {
                         Text(
-                            text = emailError!!,
+                            text = uiState.emailError!!,
                             color = Color.Red,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 8.dp, top = 4.dp)
@@ -150,11 +137,8 @@ class LoginScreen : Screen, ScreenProvider {
 
                 Column(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
-                        value = password,
-                        onValueChange = { newValue ->
-                            password = newValue
-                            if (passwordError != null) validatePassword(newValue)
-                        },
+                        value = uiState.password,
+                        onValueChange = onPasswordChange,
                         label = { Text("Password") },
                         modifier = Modifier.fillMaxWidth(),
                         textStyle = MaterialTheme.typography.bodyLarge.copy(
@@ -172,16 +156,14 @@ class LoginScreen : Screen, ScreenProvider {
                         },
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedBorderColor = if (passwordError != null) Color.Red else Color.LightGray,
-                            focusedBorderColor = if (passwordError != null) Color.Red else Color(
-                                0xFF6B4EFF
-                            )
+                            unfocusedBorderColor = if (uiState.passwordError != null) Color.Red else Color.LightGray,
+                            focusedBorderColor = if (uiState.passwordError != null) Color.Red else Color(0xFF6B4EFF)
                         ),
-                        isError = passwordError != null
+                        isError = uiState.passwordError != null
                     )
-                    if (passwordError != null) {
+                    if (uiState.passwordError != null) {
                         Text(
-                            text = passwordError!!,
+                            text = uiState.passwordError!!,
                             color = Color.Red,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(start = 8.dp, top = 4.dp)
@@ -189,7 +171,7 @@ class LoginScreen : Screen, ScreenProvider {
                     }
                 }
 
-                authError?.let {
+                uiState.authError?.let {
                     Text(
                         text = it,
                         color = Color.Red,
@@ -201,7 +183,7 @@ class LoginScreen : Screen, ScreenProvider {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 Button(
-                    onClick = { validateAndLogin() },
+                    onClick = onLoginClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
@@ -209,9 +191,9 @@ class LoginScreen : Screen, ScreenProvider {
                         containerColor = Color(0xFF6B4EFF)
                     ),
                     shape = RoundedCornerShape(16.dp),
-                    enabled = !isLoading
+                    enabled = !uiState.isLoading
                 ) {
-                    if (isLoading) {
+                    if (uiState.isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.size(24.dp),
                             color = MaterialTheme.colorScheme.onPrimary
@@ -231,7 +213,7 @@ class LoginScreen : Screen, ScreenProvider {
                 )
 
                 OutlinedButton(
-                    onClick = { },
+                    onClick = onGoogleLoginClick,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp),
@@ -262,7 +244,7 @@ class LoginScreen : Screen, ScreenProvider {
                         "Don't have an account? ",
                         color = Color.Gray
                     )
-                    TextButton(onClick = { onNavigateToScreen(ScreenRoute.Register) }) {
+                    TextButton(onClick = onRegisterClick) {
                         Text(
                             "Sign Up",
                             color = Color(0xFF6B4EFF),

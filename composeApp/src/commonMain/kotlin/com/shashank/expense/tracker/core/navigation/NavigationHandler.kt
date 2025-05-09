@@ -1,16 +1,20 @@
 package com.shashank.expense.tracker.core.navigation
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import cafe.adriel.voyager.navigator.Navigator
 import com.shashank.expense.tracker.presentation.screens.auth.LoginScreen
 import com.shashank.expense.tracker.presentation.screens.auth.RegisterScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.DashboardScreen
 import com.shashank.expense.tracker.presentation.screens.onboarding.OnboardingScreen
 import com.shashank.expense.tracker.presentation.screens.splash.SplashScreen
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 
 /**
  * Centralized navigation handler for the app.
  * This function handles navigation from any screen to any other screen using Voyager's Navigator.
  */
+@ExperimentalMaterial3Api
+@ExperimentalResourceApi
 fun navigateToScreen(navigator: Navigator?, route: ScreenRoute) {
     when (route) {
         ScreenRoute.Onboarding -> navigator?.push(OnboardingScreen())

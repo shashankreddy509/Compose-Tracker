@@ -23,8 +23,6 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.shashank.expense.tracker.core.navigation.ScreenRoute
 import com.shashank.expense.tracker.core.navigation.navigateToScreen
-import com.shashank.expense.tracker.presentation.screens.auth.LoginScreen
-import com.shashank.expense.tracker.presentation.screens.auth.RegisterScreen
 import expense_tracker_compose.composeapp.generated.resources.Res
 import expense_tracker_compose.composeapp.generated.resources.ic_onboarding_1
 import expense_tracker_compose.composeapp.generated.resources.ic_onboarding_2
@@ -37,7 +35,9 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 class OnboardingScreen : Screen, ScreenProvider {
     override val key: String = ScreenRoute.Onboarding.toString()
 
-    @OptIn(ExperimentalFoundationApi::class)
+    @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class,
+        ExperimentalResourceApi::class
+    )
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current

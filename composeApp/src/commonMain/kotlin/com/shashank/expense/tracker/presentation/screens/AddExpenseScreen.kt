@@ -13,7 +13,7 @@ import androidx.compose.ui.unit.dp
 import com.shashank.expense.tracker.domain.model.TransactionType
 import com.shashank.expense.tracker.domain.model.PaymentMethod
 import com.shashank.expense.tracker.presentation.viewmodel.AddExpenseViewModel
-import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
