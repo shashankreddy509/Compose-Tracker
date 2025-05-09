@@ -6,9 +6,10 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.kotlinSerialization)
+    alias(libs.plugins.composeCompiler)
     id("app.cash.sqldelight") version "2.0.1"
-    id("com.google.gms.google-services") version "4.4.1"
-    id("com.google.firebase.crashlytics") version "2.9.9"
+    id("com.google.gms.google-services") version "4.4.2"
+    id("com.google.firebase.crashlytics") version "3.0.3"
 }
 
 kotlin {
@@ -78,7 +79,7 @@ kotlin {
                 implementation(libs.firebase.firestore)
                 implementation(libs.stately.common)
 
-                
+                implementation("com.benasher44:uuid:0.6.0")
                 // Stately dependencies
 //                implementation("co.touchlab:stately-common:2.2.0")
 //                implementation("co.touchlab:stately-isolate:2.2.0")

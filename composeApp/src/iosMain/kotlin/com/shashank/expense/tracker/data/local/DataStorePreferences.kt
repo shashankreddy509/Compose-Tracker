@@ -26,6 +26,3 @@ actual class DataStorePreferences {
     }
 }
 
-actual class DataStorePreferencesFactory {
-    actual fun create(): DataStorePreferences = DataStorePreferences()
-} 

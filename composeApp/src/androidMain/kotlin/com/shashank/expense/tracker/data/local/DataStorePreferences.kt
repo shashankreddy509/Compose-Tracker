@@ -31,6 +31,3 @@ actual class DataStorePreferences(private val context: Context) {
     }
 }
 
-actual class DataStorePreferencesFactory(private val context: Context) {
-    actual fun create(): DataStorePreferences = DataStorePreferences(context)
-} 
