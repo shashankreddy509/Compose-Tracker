@@ -3,6 +3,7 @@ package com.shashank.expense.tracker.data.local
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import platform.Foundation.NSUserDefaults
+import platform.Foundation.NSBundle
 
 actual class DataStorePreferences {
     private val userDefaults = NSUserDefaults.standardUserDefaults
@@ -17,8 +18,11 @@ actual class DataStorePreferences {
     }
 
     actual suspend fun clear() {
-        userDefaults.removePersistentDomainForName(userDefaults.suiteName)
-        userDefaults.synchronize()
+        val bundleIdentifier = NSBundle.mainBundle.bundleIdentifier
+        if (bundleIdentifier != null) {
+            userDefaults.removePersistentDomainForName(bundleIdentifier)
+            userDefaults.synchronize()
+        }
     }
 }
 

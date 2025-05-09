@@ -10,8 +10,6 @@ import com.shashank.expense.tracker.domain.model.Budget
 import com.shashank.expense.tracker.util.DateTimeUtil
 import com.shashank.expense.tracker.util.StringFormatter
 import kotlinx.datetime.*
-import kotlinx.datetime.toJavaLocalDateTime
-import java.time.format.DateTimeFormatter
 
 @Composable
 fun BudgetProgressBar(
@@ -133,8 +131,7 @@ fun AmountTrend(
 }
 
 private fun formatDateRange(startDate: Long, endDate: Long): String {
-    val formatter = DateTimeFormatter.ofPattern("MMM dd")
     val start = Instant.fromEpochMilliseconds(startDate).toLocalDateTime(TimeZone.currentSystemDefault())
     val end = Instant.fromEpochMilliseconds(endDate).toLocalDateTime(TimeZone.currentSystemDefault())
-    return "${start.toJavaLocalDateTime().format(formatter)} - ${end.toJavaLocalDateTime().format(formatter)}"
+    return "${DateTimeUtil.formatMonthYear(start)} - ${DateTimeUtil.formatMonthYear(end)}"
 } 

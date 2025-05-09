@@ -72,6 +72,17 @@ kotlin {
                 // Charts
                 implementation(libs.compose)
                 implementation(libs.compose.m3)
+
+                // Firebase
+                implementation(libs.firebase.auth)
+                implementation(libs.firebase.firestore)
+                implementation(libs.stately.common)
+
+                
+                // Stately dependencies
+//                implementation("co.touchlab:stately-common:2.2.0")
+//                implementation("co.touchlab:stately-isolate:2.2.0")
+//                implementation("co.touchlab:stately-concurrency:2.2.0")
             }
         }
         
@@ -89,12 +100,7 @@ kotlin {
                 // SQLDelight
                 implementation(libs.sqldelight.android)
                 implementation(libs.android.database.sqlcipher)
-                
-                // Firebase
-                //Firebase
-                implementation(libs.firebase.auth)
-                implementation(libs.firebase.firestore)
-                implementation(libs.stately.common)
+
                 
                 // DataStore
                 implementation(libs.androidx.datastore.preferences)

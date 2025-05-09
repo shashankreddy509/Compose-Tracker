@@ -1,6 +1,7 @@
 package com.shashank.expense.tracker.presentation.components
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -9,18 +10,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
 import com.shashank.expense.tracker.domain.model.Transaction
 import com.shashank.expense.tracker.domain.model.TransactionType
-import com.shashank.expense.tracker.domain.model.PaymentMethod
-import kotlinx.datetime.*
-import kotlinx.datetime.toJavaLocalDateTime
-import java.time.format.DateTimeFormatter
 import com.shashank.expense.tracker.util.DateTimeUtil
 import com.shashank.expense.tracker.util.StringFormatter
+import kotlinx.datetime.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,12 +124,11 @@ private fun formatAmount(amount: Double, type: TransactionType): String {
         TransactionType.INCOME -> "+"
         TransactionType.EXPENSE -> "-"
     }
-    return "$prefix$${String.format("%.2f", amount)}"
+    return "$prefix$" + StringFormatter.format("%.2f", amount)
 }
 
 private fun formatDate(dateTime: LocalDateTime): String {
-    val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
-    return dateTime.toJavaLocalDateTime().format(formatter)
+    return DateTimeUtil.formatDateTime(dateTime)
 }
 
 @Composable

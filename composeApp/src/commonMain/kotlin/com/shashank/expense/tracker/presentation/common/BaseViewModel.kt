@@ -7,13 +7,19 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-expect abstract class CommonViewModel() {
+interface CommonViewModel {
     val viewModelScope: CoroutineScope
+}
+
+// Platform-specific expect class
+expect abstract class BaseViewModel() : CommonViewModel {
+    override val viewModelScope: CoroutineScope
     protected open fun onCleared()
     fun <T> Flow<T>.stateInViewModel(initialValue: T): StateFlow<T>
 }
 
-abstract class BaseViewModel<State, Event>(initialState: State) : CommonViewModel() {
+// Generic base viewmodel for shared logic (not expect/actual)
+abstract class BaseViewModelWithState<State, Event>(initialState: State) : BaseViewModel() {
     private val _state = MutableStateFlow(initialState)
     val state: StateFlow<State> = _state
 
@@ -36,4 +42,4 @@ abstract class BaseViewModel<State, Event>(initialState: State) : CommonViewMode
             collect { action(it) }
         }
     }
-} 
+}
