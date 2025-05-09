@@ -20,7 +20,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import com.shashank.expense.tracker.core.navigation.ScreenRoute
+import com.shashank.expense.tracker.core.navigation.navigateToScreen
+import com.shashank.expense.tracker.presentation.screens.auth.LoginScreen
+import com.shashank.expense.tracker.presentation.screens.auth.RegisterScreen
 import expense_tracker_compose.composeapp.generated.resources.Res
 import expense_tracker_compose.composeapp.generated.resources.ic_onboarding_1
 import expense_tracker_compose.composeapp.generated.resources.ic_onboarding_2
@@ -36,7 +40,12 @@ class OnboardingScreen : Screen, ScreenProvider {
     @OptIn(ExperimentalFoundationApi::class)
     @Composable
     override fun Content() {
-        OnboardingScreen({})
+        val navigator = LocalNavigator.current
+        OnboardingScreen(
+            onNavigateToScreen = { route ->
+                navigateToScreen(navigator, route)
+            }
+        )
     }
 
     @OptIn(ExperimentalResourceApi::class)
