@@ -3,7 +3,6 @@ package com.shashank.expense.tracker.data.repository
 import com.shashank.expense.tracker.domain.repository.AuthRepository
 import com.shashank.expense.tracker.domain.repository.AuthResult
 import dev.gitlive.firebase.auth.FirebaseAuth
-import dev.gitlive.firebase.auth.auth
 import org.koin.core.component.KoinComponent
 
 class AuthRepositoryImpl(
