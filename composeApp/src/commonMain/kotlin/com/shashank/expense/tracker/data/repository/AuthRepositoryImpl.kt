@@ -2,6 +2,7 @@ package com.shashank.expense.tracker.data.repository
 
 import com.shashank.expense.tracker.domain.repository.AuthRepository
 import com.shashank.expense.tracker.domain.repository.AuthResult
+import com.shashank.expense.tracker.util.extractUserMessage
 import dev.gitlive.firebase.auth.FirebaseAuth
 import org.koin.core.component.KoinComponent
 
@@ -14,7 +15,7 @@ class AuthRepositoryImpl(
             auth.signInWithEmailAndPassword(email, password)
             AuthResult(isSuccess = true)
         } catch (e: Exception) {
-            AuthResult(isSuccess = false, errorMessage = e.message)
+            AuthResult(isSuccess = false, errorMessage = extractUserMessage(e))
         }
     }
 
@@ -23,7 +24,7 @@ class AuthRepositoryImpl(
             auth.createUserWithEmailAndPassword(email, password)
             AuthResult(isSuccess = true)
         } catch (e: Exception) {
-            AuthResult(isSuccess = false, errorMessage = e.message)
+            AuthResult(isSuccess = false, errorMessage = extractUserMessage(e))
         }
     }
 
@@ -34,4 +35,4 @@ class AuthRepositoryImpl(
     override suspend fun isUserLoggedIn(): Boolean {
         return auth.currentUser != null
     }
-} 
+}

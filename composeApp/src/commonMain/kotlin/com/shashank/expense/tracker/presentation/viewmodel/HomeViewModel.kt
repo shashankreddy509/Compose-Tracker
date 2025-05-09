@@ -1,5 +1,6 @@
 package com.shashank.expense.tracker.presentation.viewmodel
 
+import androidx.lifecycle.ViewModel
 import com.shashank.expense.tracker.domain.model.Expense
 import com.shashank.expense.tracker.domain.usecase.GetExpensesUseCase
 import com.shashank.expense.tracker.domain.usecase.GetCategoriesUseCase
@@ -24,7 +25,7 @@ class HomeViewModel(
     private val getExpensesUseCase: GetExpensesUseCase,
     private val getCategoriesUseCase: GetCategoriesUseCase,
     private val getBudgetsUseCase: GetBudgetsUseCase
-) {
+): ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 

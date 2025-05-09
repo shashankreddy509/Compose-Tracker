@@ -1,7 +1,5 @@
 package com.shashank.expense.tracker.di
 
-import com.shashank.expense.tracker.data.local.DataStorePreferences
-import com.shashank.expense.tracker.data.local.DataStorePreferencesFactory
 import com.shashank.expense.tracker.data.repository.AuthRepositoryImpl
 import com.shashank.expense.tracker.data.repository.BudgetRepositoryImpl
 import com.shashank.expense.tracker.data.repository.CategoryRepositoryImpl
@@ -30,9 +28,7 @@ val appModule = module {
 
     // Core dependencies
     single { AppDatabase(get()) }
-    single { DataStorePreferencesFactory() }
-    single<DataStorePreferences> { get<DataStorePreferencesFactory>().create() }
-    
+
     // Repositories
     single<ExpenseRepository> { ExpenseRepositoryImpl(get(), get()) }
     single<CategoryRepository> { CategoryRepositoryImpl(get()) }
@@ -51,11 +47,11 @@ val appModule = module {
     single { GetMonthlyReportUseCase(get()) }
     
     // ViewModels
-    single { HomeViewModel(get(), get(), get()) }
-    single { AddExpenseViewModel(get(), get()) }
-    single { CategoryViewModel(get()) }
-    single { BudgetViewModel(get()) }
-    single { ReportViewModel(get()) }
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::AddExpenseViewModel)
+    viewModelOf(::CategoryViewModel)
+    viewModelOf(::ReportViewModel)
+    viewModelOf(::BudgetViewModel)
     viewModelOf(::AuthViewModel)
 }
 
