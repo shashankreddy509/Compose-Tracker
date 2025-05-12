@@ -18,14 +18,12 @@ fun BottomNavigationBar(
     NavigationBar {
         BottomNavItem.items.forEach { item ->
             if (item is BottomNavItem.Add) {
-                Spacer(Modifier.weight(1f, true))
                 FloatingActionButton(
                     onClick = { onItemSelected(item) },
                     containerColor = MaterialTheme.colorScheme.primary
                 ) {
                     Icon(painter = painterResource(item.icon), contentDescription = null)
                 }
-                Spacer(Modifier.weight(1f, true))
             } else {
                 NavigationBarItem(
                     selected = selectedRoute == item.route,
