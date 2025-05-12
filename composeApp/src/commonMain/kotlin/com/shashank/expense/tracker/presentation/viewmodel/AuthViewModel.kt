@@ -24,6 +24,9 @@ class AuthViewModel(
     private val _eventFlow = MutableSharedFlow<AuthEvent>()
     val eventFlow: SharedFlow<AuthEvent> = _eventFlow.asSharedFlow()
 
+    var userLoggedInEvent = mutableStateOf(false)
+        private set
+
     private val viewModelScope = CoroutineScope(Dispatchers.Main)
 
     fun onEmailChange(email: String) {
@@ -36,6 +39,9 @@ class AuthViewModel(
 
     fun onConfirmPasswordChange(confirmPassword: String) {
         uiState = uiState.copy(confirmPassword = confirmPassword, confirmPasswordError = null, authError = null)
+    }
+    init {
+        isUserLoggedIn()
     }
 
     fun login() {
@@ -117,6 +123,12 @@ class AuthViewModel(
         } else {
             uiState = uiState.copy(passwordError = null)
             true
+        }
+    }
+
+    fun isUserLoggedIn() {
+        viewModelScope.launch {
+            userLoggedInEvent.value = authRepository.isUserLoggedIn()
         }
     }
 }
