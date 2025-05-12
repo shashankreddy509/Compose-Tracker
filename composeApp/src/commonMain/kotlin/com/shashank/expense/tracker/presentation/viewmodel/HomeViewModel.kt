@@ -2,9 +2,6 @@ package com.shashank.expense.tracker.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.shashank.expense.tracker.domain.model.Expense
-import com.shashank.expense.tracker.domain.usecase.GetExpensesUseCase
-import com.shashank.expense.tracker.domain.usecase.GetCategoriesUseCase
-import com.shashank.expense.tracker.domain.usecase.GetBudgetsUseCase
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.models.ExpenseModel
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.models.SpendingPoint
 import kotlinx.coroutines.flow.MutableStateFlow

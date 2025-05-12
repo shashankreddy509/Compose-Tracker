@@ -1,13 +1,9 @@
 package com.shashank.expense.tracker.presentation.screens.dashboard
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.core.screen.Screen
 import com.shashank.expense.tracker.core.navigation.ScreenRoute
@@ -31,18 +27,18 @@ class DashboardScreen : Screen, ScreenProvider {
 
     @Composable
     fun DashboardScreen() {
-        var selectedRoute by remember { mutableStateOf(BottomNavItem.Home.route) }
+        var selectedRoute = remember { mutableStateOf(BottomNavItem.Home.route) }
         val viewModel: HomeViewModel = koinViewModel()
         Scaffold(
             bottomBar = {
                 BottomNavigationBar(
-                    selectedRoute = selectedRoute,
-                    onItemSelected = { item -> selectedRoute = item.route }
+                    selectedRoute = selectedRoute.value,
+                    onItemSelected = { item -> selectedRoute.value = item.route }
                 )
             }
         ) { innerPadding ->
-            when (selectedRoute) {
-                BottomNavItem.Home.route -> HomeScreen(Modifier.padding(innerPadding),viewModel)
+            when (selectedRoute.value) {
+                BottomNavItem.Home.route -> HomeScreen(viewModel,selectedRoute)
                 BottomNavItem.Transaction.route -> TransactionScreen(viewModel)
                 BottomNavItem.Budget.route -> BudgetScreen()
                 BottomNavItem.Profile.route -> ProfileScreen()

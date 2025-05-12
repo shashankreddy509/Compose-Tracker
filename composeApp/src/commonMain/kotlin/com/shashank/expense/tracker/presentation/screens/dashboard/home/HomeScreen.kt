@@ -18,6 +18,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.shashank.expense.tracker.presentation.components.BottomNavItem
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.components.CardWithIncomesAndExpenses
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.components.HomeHeaderRow
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.components.SpendFrequencyGraph
@@ -33,7 +35,10 @@ import com.shashank.expense.tracker.presentation.viewmodel.HomeViewModel
 import com.shashank.expense.tracker.util.StringFormatter.formatCurrency
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
+fun HomeScreen(
+    viewModel: HomeViewModel,
+    selectedRoute: MutableState<String>
+) {
     val expenses by viewModel.filteredExpenses.collectAsState()
     val totalBalance by viewModel.totalBalance.collectAsState()
     val totalIncome by viewModel.totalIncome.collectAsState()
@@ -131,7 +136,7 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
                             fontWeight = FontWeight.SemiBold
                         )
                         TextButton(
-                            onClick = { /* TODO: Show all transactions */ }
+                            onClick = { selectedRoute.value = BottomNavItem.Transaction.route }
                         ) {
                             Text(
                                 text = "See All",
