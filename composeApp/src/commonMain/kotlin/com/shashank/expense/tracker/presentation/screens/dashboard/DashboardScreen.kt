@@ -43,7 +43,7 @@ class DashboardScreen : Screen, ScreenProvider {
         ) { innerPadding ->
             when (selectedRoute) {
                 BottomNavItem.Home.route -> HomeScreen(Modifier.padding(innerPadding),viewModel)
-                BottomNavItem.Transaction.route -> TransactionScreen()
+                BottomNavItem.Transaction.route -> TransactionScreen(viewModel)
                 BottomNavItem.Budget.route -> BudgetScreen()
                 BottomNavItem.Profile.route -> ProfileScreen()
                 BottomNavItem.Add.route -> AddTransactionScreen()

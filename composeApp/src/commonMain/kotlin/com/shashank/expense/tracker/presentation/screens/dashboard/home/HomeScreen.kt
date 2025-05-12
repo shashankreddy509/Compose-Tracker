@@ -40,8 +40,9 @@ fun HomeScreen(modifier: Modifier = Modifier, viewModel: HomeViewModel) {
     val totalExpenses by viewModel.totalExpenses.collectAsState()
     val selectedMonth by viewModel.selectedMonth.collectAsState()
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
+            .padding(16.dp)
     ) {
         // Top Row: Profile and Notification
         HomeHeaderRow(viewModel)
