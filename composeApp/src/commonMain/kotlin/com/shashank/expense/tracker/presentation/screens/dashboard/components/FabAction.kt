@@ -1,11 +1,11 @@
 package com.shashank.expense.tracker.presentation.screens.dashboard.components
 
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import org.jetbrains.compose.resources.DrawableResource
 
 data class FabAction(
     val label: String,
-    val icon: ImageVector,
+    val icon: DrawableResource,
     val backgroundColor: Color,
     val offset: Offset
 )

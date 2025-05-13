@@ -17,8 +17,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
@@ -34,6 +32,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.shashank.expense.tracker.presentation.components.BottomNavItem
+import expense_tracker_compose.composeapp.generated.resources.Res
+import expense_tracker_compose.composeapp.generated.resources.ic_currency_exchange
+import expense_tracker_compose.composeapp.generated.resources.ic_expense
+import expense_tracker_compose.composeapp.generated.resources.ic_income
+import expense_tracker_compose.composeapp.generated.resources.ic_transaction
 
 @Composable
 fun CustomBottomNavigation(
@@ -60,22 +63,22 @@ fun CustomBottomNavigation(
             // Animated FAB menu items
             val fabActions = listOf(
                 FabAction(
-                    "Food",
-                    Icons.Default.Home,
-                    Color(0xFFE74C3C),
-                    Offset(-60f, -100f)
+                    "Income",
+                    Res.drawable.ic_income,
+                    Color(0xFF3498DB),
+                    Offset(-80f, -120f)
+                ),
+                FabAction(
+                    "Transfer",
+                    Res.drawable.ic_currency_exchange,
+                    Color(0xFF27AE60),
+                    Offset(0f, -140f)
                 ),
                 FabAction(
                     "Expense",
-                    Icons.Default.Close,
-                    Color(0xFF27AE60),
-                    Offset(0f, -120f)
-                ),
-                FabAction(
-                    "Income",
-                    Icons.Default.PlayArrow,
-                    Color(0xFF3498DB),
-                    Offset(60f, -100f)
+                    Res.drawable.ic_expense,
+                    Color(0xFFE74C3C),
+                    Offset(80f, -120f)
                 )
             )
 

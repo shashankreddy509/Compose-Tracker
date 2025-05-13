@@ -11,6 +11,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun FabActionButton(
@@ -33,11 +34,11 @@ fun FabActionButton(
         modifier = modifier
             .scale(scale)
             .alpha(alpha)
-            .size(48.dp),
+            .size(54.dp),
         containerColor = action.backgroundColor
     ) {
         Icon(
-            imageVector = action.icon,
+            painter = painterResource(action.icon),
             contentDescription = action.label,
             tint = Color.White
         )
