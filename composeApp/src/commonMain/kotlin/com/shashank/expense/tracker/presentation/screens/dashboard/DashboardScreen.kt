@@ -1,16 +1,24 @@
 package com.shashank.expense.tracker.presentation.screens.dashboard
 
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.core.screen.Screen
 import com.shashank.expense.tracker.core.navigation.ScreenRoute
 import com.shashank.expense.tracker.presentation.components.BottomNavItem
-import com.shashank.expense.tracker.presentation.components.BottomNavigationBar
-import com.shashank.expense.tracker.presentation.screens.dashboard.addtransaction.AddTransactionScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.budget.BudgetScreen
+import com.shashank.expense.tracker.presentation.screens.dashboard.components.CustomBottomNavigation
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.HomeScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.profile.ProfileScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.TransactionScreen
@@ -29,21 +37,40 @@ class DashboardScreen : Screen, ScreenProvider {
     fun DashboardScreen() {
         var selectedRoute = remember { mutableStateOf(BottomNavItem.Home.route) }
         val viewModel: HomeViewModel = koinViewModel()
-        Scaffold(
-            bottomBar = {
-                BottomNavigationBar(
-                    selectedRoute = selectedRoute.value,
-                    onItemSelected = { item -> selectedRoute.value = item.route }
-                )
+        var fabExpanded by remember { mutableStateOf(false) }
+        Box(modifier = Modifier.fillMaxSize()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFFEDE7F6)) // Light purple background
+                    .padding(bottom = 80.dp), // Add padding for the navbar
+                contentAlignment = Alignment.Center
+            ) {
+                when (selectedRoute.value) {
+                    BottomNavItem.Home.route -> HomeScreen(viewModel,selectedRoute)
+                    BottomNavItem.Transaction.route -> TransactionScreen(viewModel)
+                    BottomNavItem.Budget.route -> BudgetScreen()
+                    BottomNavItem.Profile.route -> ProfileScreen()
+                }
             }
-        ) { innerPadding ->
-            when (selectedRoute.value) {
-                BottomNavItem.Home.route -> HomeScreen(viewModel,selectedRoute)
-                BottomNavItem.Transaction.route -> TransactionScreen(viewModel)
-                BottomNavItem.Budget.route -> BudgetScreen()
-                BottomNavItem.Profile.route -> ProfileScreen()
-                BottomNavItem.Add.route -> AddTransactionScreen()
-            }
+            // Bottom navigation with FAB
+            CustomBottomNavigation(
+                modifier = Modifier.align(Alignment.BottomCenter),
+                navItems = BottomNavItem.items,
+                selectedIndex = selectedRoute,
+                onNavItemClick = { index ->
+                    if (index != BottomNavItem.Add.route) { // Not the FAB placeholder
+                        selectedRoute.value = index
+                        fabExpanded = false
+                    }
+                },
+                fabExpanded = fabExpanded,
+                onFabClick = { fabExpanded = !fabExpanded },
+                onFabActionClick = { action ->
+                    println("FAB action clicked: $action")
+                    fabExpanded = false
+                }
+            )
         }
     }
 }
