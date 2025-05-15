@@ -46,7 +46,7 @@ fun CustomBottomNavigation(
     onNavItemClick: (String) -> Unit,
     fabExpanded: Boolean,
     onFabClick: () -> Unit,
-    onFabActionClick: (String) -> Unit
+    onFabActionClick: @Composable (String) -> Unit
 ) {
     Box(modifier = modifier.fillMaxWidth()) {
         // FAB Actions (displayed when expanded)

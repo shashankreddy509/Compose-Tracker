@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -15,14 +16,19 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import com.shashank.expense.tracker.core.navigation.ScreenRoute
+import com.shashank.expense.tracker.core.navigation.navigateToScreen
 import com.shashank.expense.tracker.presentation.components.BottomNavItem
 import com.shashank.expense.tracker.presentation.screens.dashboard.budget.BudgetScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.components.CustomBottomNavigation
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.HomeScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.profile.ProfileScreen
+import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.TransactionEntryScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.TransactionScreen
+import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.components.TransactionType
 import com.shashank.expense.tracker.presentation.viewmodel.HomeViewModel
+import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.koin.compose.viewmodel.koinViewModel
 
 class DashboardScreen : Screen, ScreenProvider {
@@ -33,8 +39,10 @@ class DashboardScreen : Screen, ScreenProvider {
         DashboardScreen()
     }
 
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
     @Composable
     fun DashboardScreen() {
+        val navigator = LocalNavigator.current
         var selectedRoute = remember { mutableStateOf(BottomNavItem.Home.route) }
         val viewModel: HomeViewModel = koinViewModel()
         var fabExpanded by remember { mutableStateOf(false) }
@@ -68,7 +76,26 @@ class DashboardScreen : Screen, ScreenProvider {
                 onFabClick = { fabExpanded = !fabExpanded },
                 onFabActionClick = { action ->
                     println("FAB action clicked: $action")
-                    fabExpanded = false
+                    when (action) {
+                        "Income" -> {
+                            selectedRoute.value = BottomNavItem.Transaction.route
+                            fabExpanded = false
+                            navigateToScreen(navigator, ScreenRoute.Transaction)
+                            TransactionEntryScreen(transactionType = TransactionType.INCOME)
+                        }
+                        "Expense" -> {
+                            selectedRoute.value = BottomNavItem.Transaction.route
+                            fabExpanded = false
+                            navigateToScreen(navigator, ScreenRoute.Transaction)
+                            TransactionEntryScreen(transactionType = TransactionType.EXPENSE)
+                        }
+                        "Transfer" -> {
+                            selectedRoute.value = BottomNavItem.Transaction.route
+                            fabExpanded = false
+                            navigateToScreen(navigator, ScreenRoute.Transaction)
+                            TransactionEntryScreen(transactionType = TransactionType.TRANSFER)
+                        }
+                    }
                 }
             )
         }
