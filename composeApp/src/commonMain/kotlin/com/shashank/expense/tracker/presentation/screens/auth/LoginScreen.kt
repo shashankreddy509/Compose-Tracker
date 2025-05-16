@@ -57,6 +57,8 @@ import com.shashank.expense.tracker.domain.model.AuthUiState
 import com.shashank.expense.tracker.presentation.viewmodel.AuthViewModel
 import expense_tracker_compose.composeapp.generated.resources.Res
 import expense_tracker_compose.composeapp.generated.resources.ic_google
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.collectLatest
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
@@ -72,6 +74,7 @@ class LoginScreen : Screen, ScreenProvider {
         val navigator = LocalNavigator.current
         val viewModel: AuthViewModel = koinViewModel()
         val scope = rememberCoroutineScope()
+        Dispatchers.IO
 
         // Collect auth events
         LaunchedEffect(Unit) {

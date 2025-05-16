@@ -1,13 +1,17 @@
 package com.shashank.expense.tracker.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.shashank.expense.tracker.domain.model.Expense
+import com.shashank.expense.tracker.domain.usecase.GetExpensesUseCase
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.models.ExpenseModel
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.models.SpendingPoint
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
@@ -21,7 +25,9 @@ data class HomeUiState(
     val error: String? = null
 )
 
-class HomeViewModel: ViewModel() {
+class HomeViewModel(
+    private val getExpensesUseCase: GetExpensesUseCase
+) : ViewModel() {
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
 
@@ -52,7 +58,50 @@ class HomeViewModel: ViewModel() {
 
     private fun loadExpenses() {
         _uiState.update { it.copy(isLoading = true) }
-        // TODO: Implement expense loading logic
+        viewModelScope.launch {
+            getExpensesUseCase().collectLatest { expenses ->
+                val totalIncome = expenses.filter { it.type.name == "INCOME" }.sumOf { it.amount }
+                val totalExpense = expenses.filter { it.type.name == "EXPENSE" }.sumOf { it.amount }
+                val balance = totalIncome - totalExpense
+                _totalIncome.value = totalIncome
+                _totalExpenses.value = totalExpense
+                _totalBalance.value = balance
+                // Prepare spending trend (group by day, sum expenses)
+                val spendingPoints = expenses.filter { it.type.name == "EXPENSE" }
+                    .groupBy { it.date.date }
+                    .map { (date, txs) ->
+                        SpendingPoint(
+                            value = txs.sumOf { it.amount }.toFloat(),
+                            label = date.toString(),
+                            timestamp = txs.first().date
+                        )
+                    }
+                    .sortedBy { it.timestamp }
+                _spendingData.value = spendingPoints
+                // Optionally, map to ExpenseModel for filteredExpenses
+                _filteredExpenses.value = expenses.map {
+                    ExpenseModel(
+                        id = it.id,
+                        title = it.description,
+                        amount = it.amount,
+                        category = it.categoryId.toString(),
+                        type = it.type.name,
+                        tax = 0.0,
+                        date = 0L,
+                        createdAt = 0L
+                    )
+                }
+                _uiState.update { state ->
+                    state.copy(
+                        expenses = expenses,
+                        totalIncome = totalIncome,
+                        totalExpense = totalExpense,
+                        isLoading = false,
+                        error = null
+                    )
+                }
+            }
+        }
     }
 
     fun refresh() {

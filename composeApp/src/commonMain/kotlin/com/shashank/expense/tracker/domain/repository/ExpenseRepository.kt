@@ -12,4 +12,4 @@ interface ExpenseRepository {
     suspend fun updateExpense(expense: Expense)
     suspend fun deleteExpense(id: Long)
     suspend fun getMonthlyReport(year: Int, month: Int): List<MonthlyReport>
-} 
+}

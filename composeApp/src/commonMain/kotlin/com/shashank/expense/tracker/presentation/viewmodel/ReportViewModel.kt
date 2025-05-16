@@ -2,7 +2,7 @@ package com.shashank.expense.tracker.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.shashank.expense.tracker.data.repository.MonthlyReport
+import com.shashank.expense.tracker.domain.model.MonthlyReport
 import com.shashank.expense.tracker.domain.usecase.GetMonthlyReportUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

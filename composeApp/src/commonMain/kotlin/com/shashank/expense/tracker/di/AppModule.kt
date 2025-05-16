@@ -1,6 +1,5 @@
 package com.shashank.expense.tracker.di
 
-import app.cash.sqldelight.db.SqlDriver
 import com.shashank.expense.tracker.data.repository.AuthRepositoryImpl
 import com.shashank.expense.tracker.data.repository.BudgetRepositoryImpl
 import com.shashank.expense.tracker.data.repository.CategoryRepositoryImpl
@@ -16,6 +15,9 @@ import com.shashank.expense.tracker.presentation.viewmodel.AuthViewModel
 import com.shashank.expense.tracker.presentation.viewmodel.*
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.IO
 import org.koin.core.KoinApplication
 import org.koin.core.context.startKoin
 import org.koin.dsl.module
@@ -31,6 +33,7 @@ val appModule = module {
     // Core dependencies
     single { AppDatabase(get())}
     single<ExpenseTrackerDatabase> { AppDatabase(get()).database }
+    single<CoroutineDispatcher> { Dispatchers.IO }
     // Database driver/factory (platform-specific)
 //    single { DatabaseDriverFactory(get()) }
 //    single<ExpenseTrackerDatabase> { ExpenseTrackerDatabase(get<DatabaseDriverFactory>().createDriver()) }
