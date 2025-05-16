@@ -6,4 +6,5 @@ sealed interface ScreenRoute {
     data object Login : ScreenRoute
     data object Register : ScreenRoute
     data object Dashboard : ScreenRoute
-} 
+    data object TransactionEntry : ScreenRoute
+}

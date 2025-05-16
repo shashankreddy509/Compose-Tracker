@@ -17,7 +17,7 @@ import org.jetbrains.compose.resources.painterResource
 fun FabActionButton(
     action: FabAction,
     expanded: Boolean,
-    onClick: @Composable () -> Unit,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val scale by animateFloatAsState(
@@ -30,7 +30,7 @@ fun FabActionButton(
     )
 
     FloatingActionButton(
-        onClick = { onClick },
+        onClick = onClick,
         modifier = modifier
             .scale(scale)
             .alpha(alpha)

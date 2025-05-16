@@ -53,7 +53,7 @@ class TransactionEntryScreen(private val transactionType: TransactionType) : Scr
     ScreenProvider {
     @Composable
     override fun Content() {
-        TransactionEntryScreen(transactionType = transactionType)
+        TransactionEntryScreen(transactionType = transactionType,{})
     }
 }
 
@@ -64,6 +64,7 @@ fun TransactionEntryScreen(
     onBackClick: () -> Unit = {},
     onContinueClick: (amount: String, category: String, description: String, wallet: String, repeat: Boolean) -> Unit = { _, _, _, _, _ -> }
 ) {
+    println(transactionType.title)
     var amountText by remember { mutableStateOf("0") }
     var categoryText by remember { mutableStateOf("") }
     var descriptionText by remember { mutableStateOf("") }

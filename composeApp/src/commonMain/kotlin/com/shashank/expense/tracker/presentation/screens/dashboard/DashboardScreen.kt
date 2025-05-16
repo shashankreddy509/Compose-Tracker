@@ -76,26 +76,24 @@ class DashboardScreen : Screen, ScreenProvider {
                 onFabClick = { fabExpanded = !fabExpanded },
                 onFabActionClick = { action ->
                     println("FAB action clicked: $action")
-                    when (action) {
-                        "Income" -> {
-                            selectedRoute.value = BottomNavItem.Transaction.route
-                            fabExpanded = false
-                            navigateToScreen(navigator, ScreenRoute.Transaction)
-                            TransactionEntryScreen(transactionType = TransactionType.INCOME)
-                        }
-                        "Expense" -> {
-                            selectedRoute.value = BottomNavItem.Transaction.route
-                            fabExpanded = false
-                            navigateToScreen(navigator, ScreenRoute.Transaction)
-                            TransactionEntryScreen(transactionType = TransactionType.EXPENSE)
-                        }
-                        "Transfer" -> {
-                            selectedRoute.value = BottomNavItem.Transaction.route
-                            fabExpanded = false
-                            navigateToScreen(navigator, ScreenRoute.Transaction)
-                            TransactionEntryScreen(transactionType = TransactionType.TRANSFER)
-                        }
-                    }
+                    selectedRoute.value = BottomNavItem.Transaction.route
+                    fabExpanded = false
+                    navigateToScreen(navigator, ScreenRoute.TransactionEntry,action)
+//                    when (action) {
+//                        TransactionType.INCOME.title -> {
+//
+//                        }
+//                        TransactionType.EXPENSE.title -> {
+//                            selectedRoute.value = BottomNavItem.Transaction.route
+//                            fabExpanded = false
+//                            navigateToScreen(navigator, ScreenRoute.TransactionEntry,action)
+//                        }
+//                        TransactionType.TRANSFER.title -> {
+//                            selectedRoute.value = BottomNavItem.Transaction.route
+//                            fabExpanded = false
+//                            navigateToScreen(navigator, ScreenRoute.TransactionEntry,TransactionType.TRANSFER.title)
+//                        }
+//                    }
                 }
             )
         }
