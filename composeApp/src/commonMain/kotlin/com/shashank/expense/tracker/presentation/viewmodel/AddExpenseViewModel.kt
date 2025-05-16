@@ -2,6 +2,7 @@ package com.shashank.expense.tracker.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.shashank.expense.tracker.domain.model.Category
 import com.shashank.expense.tracker.domain.model.Expense
 import com.shashank.expense.tracker.domain.model.TransactionType
 import com.shashank.expense.tracker.domain.model.PaymentMethod
@@ -10,6 +11,8 @@ import com.shashank.expense.tracker.domain.usecase.GetCategoriesUseCase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Clock
 import kotlinx.datetime.TimeZone
@@ -35,6 +38,9 @@ class AddExpenseViewModel(
 
     private val _state = MutableStateFlow(AddExpenseState())
     val state: StateFlow<AddExpenseState> = _state.asStateFlow()
+
+    private val _categories = MutableStateFlow<List<Category>>(emptyList())
+    val categories: StateFlow<List<Category>> = _categories.asStateFlow()
 
     fun onAmountChange(amount: String) {
         _state.value = _state.value.copy(amount = amount)
@@ -66,6 +72,25 @@ class AddExpenseViewModel(
 
     fun onReceiptImageUrlChange(url: String?) {
         _state.value = _state.value.copy(receiptImageUrl = url)
+    }
+
+    init {
+        loadCategories()
+    }
+
+    private fun loadCategories() {
+        viewModelScope.launch {
+            try {
+                getCategoriesUseCase().collectLatest {
+                    _categories.value = it
+                }
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    isLoading = false,
+                    error = e.message ?: "An error occurred"
+                )
+            }
+        }
     }
 
     fun addExpense() {

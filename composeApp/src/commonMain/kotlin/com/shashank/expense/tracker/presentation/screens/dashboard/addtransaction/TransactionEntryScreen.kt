@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,9 +46,11 @@ import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.components.TransactionType
+import com.shashank.expense.tracker.presentation.viewmodel.AddExpenseViewModel
 import expense_tracker_compose.composeapp.generated.resources.Res
 import expense_tracker_compose.composeapp.generated.resources.ic_attachment
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.viewmodel.koinViewModel
 
 
 class TransactionEntryScreen(private val transactionType: TransactionType) : Screen,
@@ -73,6 +76,9 @@ fun TransactionEntryScreen(
     var descriptionText by remember { mutableStateOf("") }
     var walletText by remember { mutableStateOf("") }
     var isRepeatEnabled by remember { mutableStateOf(false) }
+
+    val viewModel: AddExpenseViewModel = koinViewModel()
+    val categories by viewModel.categories.collectAsState()
 
     val backgroundColor = transactionType.color
 
