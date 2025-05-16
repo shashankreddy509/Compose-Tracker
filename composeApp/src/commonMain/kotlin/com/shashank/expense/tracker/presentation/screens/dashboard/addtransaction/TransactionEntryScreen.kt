@@ -1,4 +1,4 @@
-package com.shashank.expense.tracker.presentation.screens.dashboard.transactions
+package com.shashank.expense.tracker.presentation.screens.dashboard.addtransaction
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.navigator.LocalNavigator
 import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.components.TransactionType
 import expense_tracker_compose.composeapp.generated.resources.Res
 import expense_tracker_compose.composeapp.generated.resources.ic_attachment
@@ -53,7 +54,10 @@ class TransactionEntryScreen(private val transactionType: TransactionType) : Scr
     ScreenProvider {
     @Composable
     override fun Content() {
-        TransactionEntryScreen(transactionType = transactionType,{})
+        val navigator = LocalNavigator.current
+        TransactionEntryScreen(transactionType = transactionType, {
+            navigator?.pop()
+        })
     }
 }
 
@@ -64,7 +68,6 @@ fun TransactionEntryScreen(
     onBackClick: () -> Unit = {},
     onContinueClick: (amount: String, category: String, description: String, wallet: String, repeat: Boolean) -> Unit = { _, _, _, _, _ -> }
 ) {
-    println(transactionType.title)
     var amountText by remember { mutableStateOf("0") }
     var categoryText by remember { mutableStateOf("") }
     var descriptionText by remember { mutableStateOf("") }

@@ -24,9 +24,7 @@ import com.shashank.expense.tracker.presentation.screens.dashboard.budget.Budget
 import com.shashank.expense.tracker.presentation.screens.dashboard.components.CustomBottomNavigation
 import com.shashank.expense.tracker.presentation.screens.dashboard.home.HomeScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.profile.ProfileScreen
-import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.TransactionEntryScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.TransactionScreen
-import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.components.TransactionType
 import com.shashank.expense.tracker.presentation.viewmodel.HomeViewModel
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.koin.compose.viewmodel.koinViewModel

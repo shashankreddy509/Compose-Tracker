@@ -5,7 +5,7 @@ import cafe.adriel.voyager.navigator.Navigator
 import com.shashank.expense.tracker.presentation.screens.auth.LoginScreen
 import com.shashank.expense.tracker.presentation.screens.auth.RegisterScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.DashboardScreen
-import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.TransactionEntryScreen
+import com.shashank.expense.tracker.presentation.screens.dashboard.addtransaction.TransactionEntryScreen
 import com.shashank.expense.tracker.presentation.screens.dashboard.transactions.components.TransactionType
 import com.shashank.expense.tracker.presentation.screens.onboarding.OnboardingScreen
 import com.shashank.expense.tracker.presentation.screens.splash.SplashScreen
