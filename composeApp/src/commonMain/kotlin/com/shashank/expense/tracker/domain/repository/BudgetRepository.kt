@@ -12,4 +12,11 @@ interface BudgetRepository {
     suspend fun addBudget(budget: Budget)
     suspend fun updateBudget(budget: Budget)
     suspend fun deleteBudget(id: Long)
-} 
+}
+
+data class BudgetStatus(
+    val budget: Budget,
+    val spent: Double,
+    val remaining: Double,
+    val percentageUsed: Double
+)

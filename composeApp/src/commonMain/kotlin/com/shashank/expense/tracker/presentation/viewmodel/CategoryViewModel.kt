@@ -1,8 +1,8 @@
 package com.shashank.expense.tracker.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.shashank.expense.tracker.data.repository.CategoryRepository
 import com.shashank.expense.tracker.domain.model.Category
+import com.shashank.expense.tracker.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

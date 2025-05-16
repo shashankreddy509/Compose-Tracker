@@ -1,7 +1,7 @@
 package com.shashank.expense.tracker.domain.usecase
 
-import com.shashank.expense.tracker.data.repository.BudgetRepository
 import com.shashank.expense.tracker.domain.model.Budget
+import com.shashank.expense.tracker.domain.repository.BudgetRepository
 import kotlinx.coroutines.flow.Flow
 
 class GetBudgetsUseCase(private val repository: BudgetRepository) {

@@ -1,12 +1,16 @@
 package com.shashank.expense.tracker.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.shashank.expense.tracker.data.repository.BudgetRepository
 import com.shashank.expense.tracker.domain.model.Budget
+import com.shashank.expense.tracker.domain.repository.BudgetRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Month
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 class BudgetViewModel(
     private val budgetRepository: BudgetRepository
@@ -16,6 +20,9 @@ class BudgetViewModel(
 
     private val _selectedBudget = MutableStateFlow<Budget?>(null)
     val selectedBudget: StateFlow<Budget?> = _selectedBudget.asStateFlow()
+
+    private val _selectedMonth = MutableStateFlow(Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).month)
+    val selectedMonth: StateFlow<Month> = _selectedMonth.asStateFlow()
 
     init {
         loadBudgets()
@@ -39,5 +46,9 @@ class BudgetViewModel(
 
     fun selectBudget(budget: Budget?) {
         _selectedBudget.update { budget }
+    }
+
+    fun selectMonth(month: Month) {
+        _selectedMonth.value = month
     }
 } 

@@ -1,10 +1,12 @@
 package com.shashank.expense.tracker.di
 
+import app.cash.sqldelight.db.SqlDriver
 import com.shashank.expense.tracker.data.repository.AuthRepositoryImpl
 import com.shashank.expense.tracker.data.repository.BudgetRepositoryImpl
 import com.shashank.expense.tracker.data.repository.CategoryRepositoryImpl
 import com.shashank.expense.tracker.data.repository.ExpenseRepositoryImpl
 import com.shashank.expense.tracker.db.AppDatabase
+import com.shashank.expense.tracker.db.ExpenseTrackerDatabase
 import com.shashank.expense.tracker.domain.repository.AuthRepository
 import com.shashank.expense.tracker.domain.repository.BudgetRepository
 import com.shashank.expense.tracker.domain.repository.CategoryRepository
@@ -27,7 +29,13 @@ val appModule = module {
     single { Firebase.auth }
 
     // Core dependencies
-    single { AppDatabase(get()) }
+    single { AppDatabase(get())}
+    single<ExpenseTrackerDatabase> { AppDatabase(get()).database }
+    // Database driver/factory (platform-specific)
+//    single { DatabaseDriverFactory(get()) }
+//    single<ExpenseTrackerDatabase> { ExpenseTrackerDatabase(get<DatabaseDriverFactory>().createDriver()) }
+
+//    single<ExpenseTrackerDatabase> { get<ExpenseTrackerDatabase>() }
 
     // Repositories
     single<ExpenseRepository> { ExpenseRepositoryImpl(get(), get()) }

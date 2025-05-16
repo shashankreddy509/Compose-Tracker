@@ -1,7 +1,7 @@
 package com.shashank.expense.tracker.domain.usecase
 
-import com.shashank.expense.tracker.data.repository.CategoryRepository
 import com.shashank.expense.tracker.domain.model.Category
+import com.shashank.expense.tracker.domain.repository.CategoryRepository
 
 class AddCategoryUseCase(
     private val repository: CategoryRepository
