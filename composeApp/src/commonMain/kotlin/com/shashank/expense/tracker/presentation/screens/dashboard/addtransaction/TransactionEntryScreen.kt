@@ -3,13 +3,16 @@ package com.shashank.expense.tracker.presentation.screens.dashboard.addtransacti
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -30,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,8 +44,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import cafe.adriel.voyager.core.registry.ScreenProvider
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -72,10 +78,17 @@ fun TransactionEntryScreen(
     onContinueClick: (amount: String, category: String, description: String, wallet: String, repeat: Boolean) -> Unit = { _, _, _, _, _ -> }
 ) {
     var amountText by remember { mutableStateOf("0") }
-    var categoryText by remember { mutableStateOf("") }
+    var categoryText = remember { mutableStateOf("") }
     var descriptionText by remember { mutableStateOf("") }
     var walletText by remember { mutableStateOf("") }
     var isRepeatEnabled by remember { mutableStateOf(false) }
+
+    // State for dropdowns
+    var showCategoryDropdown = remember { mutableStateOf(false) }
+    var showWalletDropdown = remember { mutableStateOf(false) }
+
+    // Use the appropriate category list based on transaction type
+//    val categories = if (transactionType == TransactionType.EXPENSE) expenseCategories else incomeCategories
 
     val viewModel: AddExpenseViewModel = koinViewModel()
     val categories by viewModel.categories.collectAsState()
@@ -173,10 +186,10 @@ fun TransactionEntryScreen(
                 // Category selector
                 FormField(
                     title = "Category",
-                    value = categoryText,
-                    onValueChange = { categoryText = it },
+                    value = categoryText.value,
+                    onValueChange = { categoryText.value = it },
                     showDropdown = true,
-                    onClick = { /* Show category picker */ }
+                    onClick = { showCategoryDropdown.value = true }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -197,7 +210,7 @@ fun TransactionEntryScreen(
                     value = walletText,
                     onValueChange = { walletText = it },
                     showDropdown = true,
-                    onClick = { /* Show wallet picker */ }
+                    onClick = { showWalletDropdown.value = true }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -262,7 +275,7 @@ fun TransactionEntryScreen(
                     onClick = {
                         onContinueClick(
                             amountText,
-                            categoryText,
+                            categoryText.value,
                             descriptionText,
                             walletText,
                             isRepeatEnabled
@@ -285,7 +298,99 @@ fun TransactionEntryScreen(
             }
         }
     }
+    // Category Dropdown Dialog
+    if (showCategoryDropdown.value) {
+        val data = categories.map { it.name }
+        DropdownDialog(
+            title = "Select Category",
+            onDismiss = { showCategoryDropdown.value = false },
+            data = categories.map { it.name },
+            showCategoryDropdown = showCategoryDropdown,
+            showWalletDropdown = showWalletDropdown,
+            categoryText = categoryText
+        )
+    }
+
+    // Wallet Dropdown Dialog
+//    if (showWalletDropdown) {
+//        DropdownDialog(
+//            title = "Select Wallet",
+//            onDismiss = { showWalletDropdown = false },
+//            data = wallets
+//        ) {
+//            LazyColumn {
+//                items(wallets) { wallet ->
+//                    WalletItem(
+//                        wallet = wallet,
+//                        onClick = {
+//                            walletText = wallet.name
+//                            showWalletDropdown = false
+//                        }
+//                    )
+//                }
+//            }
+//        }
+//    }
 }
+
+@Composable
+fun DropdownDialog(
+    title: String,
+    onDismiss: () -> Unit,
+    data: List<String> = emptyList(),
+    showCategoryDropdown: MutableState<Boolean>,
+    showWalletDropdown: MutableState<Boolean>,
+    categoryText: MutableState<String>,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = 400.dp),
+            shape = RoundedCornerShape(16.dp),
+            color = Color.White
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    textAlign = TextAlign.Center
+                )
+
+                Divider(modifier = Modifier.padding(bottom = 8.dp))
+
+                Box(modifier = Modifier.weight(1f)) {
+                    LazyColumn {
+                        items(data.size) { index ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable(onClick = {
+                                        categoryText.value = data[index]
+                                        showCategoryDropdown.value = false
+                                    })
+                                    .padding(vertical = 12.dp, horizontal = 16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = data[index],
+                                    fontSize = 16.sp
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 @Composable
 fun FormField(
@@ -346,19 +451,3 @@ fun FormField(
         Divider()
     }
 }
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun ExpenseEntryPreview() {
-//    MaterialTheme {
-//        TransactionEntryScreen(transactionType = TransactionType.EXPENSE)
-//    }
-//}
-//
-//@Preview(showBackground = true)
-//@Composable
-//fun IncomeEntryPreview() {
-//    MaterialTheme {
-//        TransactionEntryScreen(transactionType = TransactionType.INCOME)
-//    }
-//}
